@@ -54,7 +54,7 @@ class Pantalla1 : AppCompatActivity() {
 
                 dialog.dismiss()
             }
-        }
+        } //hola
 
     }
 }
