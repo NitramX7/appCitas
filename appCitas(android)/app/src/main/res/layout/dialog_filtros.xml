@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:background="@android:color/white">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Filtros de la cita"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:paddingBottom="16dp" />
+
+        <!-- Cercanía -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cercanía" />
+
+        <RadioGroup
+            android:id="@+id/groupCercania"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/cercania_cerca"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cerca" />
+
+            <RadioButton
+                android:id="@+id/cercania_media"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Media" />
+
+            <RadioButton
+                android:id="@+id/cercania_lejos"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lejos" />
+        </RadioGroup>
+
+        <!-- Dinero -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dinero"
+            android:paddingTop="12dp" />
+
+        <RadioGroup
+            android:id="@+id/groupDinero"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/dinero_bajo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bajo" />
+
+            <RadioButton
+                android:id="@+id/dinero_medio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Medio" />
+
+            <RadioButton
+                android:id="@+id/dinero_alto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Alto" />
+        </RadioGroup>
+
+        <!-- Facilidad -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Facilidad"
+            android:paddingTop="12dp" />
+
+        <RadioGroup
+            android:id="@+id/groupFacilidad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/facil_facil"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Fácil" />
+
+            <RadioButton
+                android:id="@+id/facil_normal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Normal" />
+
+            <RadioButton
+                android:id="@+id/facil_dificil"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Difícil" />
+        </RadioGroup>
+
+        <!-- Intensidad -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Intensidad"
+            android:paddingTop="12dp" />
+
+        <RadioGroup
+            android:id="@+id/groupIntensidad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/int_tranqui"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tranqui" />
+
+            <RadioButton
+                android:id="@+id/int_normal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Normal" />
+
+            <RadioButton
+                android:id="@+id/int_intenso"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Intenso" />
+        </RadioGroup>
+
+        <!-- Temporada -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Temporada"
+            android:paddingTop="12dp" />
+
+        <!-- 2 columnas usando LinearLayouts -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/temp_cualquiera"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Cualquiera" />
+
+                <RadioButton
+                    android:id="@+id/temp_verano"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Verano" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/temp_invierno"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Invierno" />
+
+                <RadioButton
+                    android:id="@+id/temp_otro"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Otra" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Botón aplicar -->
+        <Button
+            android:id="@+id/btnAplicarFiltros"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Aplicar filtros"
+            android:layout_marginTop="20dp" />
+
+    </LinearLayout>
+</ScrollView>
