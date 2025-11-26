@@ -9,6 +9,14 @@
     android:background="#FFF7F2"
     tools:context=".Pantalla1">
 
+    <Button
+        android:id="@+id/btnAtras"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Atrás"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <TextView
         android:id="@+id/saludo"
         android:layout_width="wrap_content"

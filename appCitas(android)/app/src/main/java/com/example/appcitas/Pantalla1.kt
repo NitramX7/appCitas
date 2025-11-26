@@ -1,5 +1,6 @@
 package com.example.appcitas
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.RadioGroup
@@ -21,6 +22,13 @@ class Pantalla1 : AppCompatActivity() {
         }
 
         val btnCita = findViewById<Button>(R.id.btnCita)
+        val btnAtras = findViewById<Button>(R.id.btnAtras)
+
+        btnAtras.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
 
         btnCita.setOnClickListener {
 
