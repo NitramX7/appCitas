@@ -1,9 +1,7 @@
-package com.example.appcitas
-
 data class CitaFiltroRequest(
-    val temporada: String?,
-    val dinero: String?,
-    val intensidad: String?,
-    val cercania: String?,
-    val facilidad: String?
+    val temporada: String? = null,
+    val dinero: Int? = null,
+    val intensidad: Int? = null,
+    val cercania: Int? = null,
+    val facilidad: Int? = null
 )

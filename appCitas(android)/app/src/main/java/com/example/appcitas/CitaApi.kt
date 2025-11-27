@@ -1,13 +1,13 @@
 package com.example.appcitas
 
-import retrofit2.Response
+import CitaFiltroRequest
 import retrofit2.http.Body
 import retrofit2.http.POST
 
 interface CitaApi {
 
-    @POST("api/citas/filtrar")
+    @POST("citas/filtrar")
     suspend fun filtrarCitas(
-        @Body filtros: CitaFiltroRequest
-    ): Response<List<CitaResponse>>
+        @Body filtro: CitaFiltroRequest
+    ): List<CitaResponse>
 }

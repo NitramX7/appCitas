@@ -2,11 +2,11 @@ package com.appcitas.dto;
 
 public class CitaFiltroRequest {
 
-    private String temporada;   // VERANO / INVIERNO
-    private String dinero;      // BARATO / MEDIO / CARO
-    private String intensidad;  // BAJA / MEDIA / ALTA
-    private String cercania;    // CERCA / LEJOS
-    private String facilidad;   // FACIL / NORMAL / COMPLEJA
+    private String temporada;
+    private Integer dinero;
+    private Integer intensidad;
+    private Integer cercania;
+    private Integer facilidad;
 
     public String getTemporada() {
         return temporada;
@@ -16,35 +16,35 @@ public class CitaFiltroRequest {
         this.temporada = temporada;
     }
 
-    public String getDinero() {
+    public Integer getDinero() {
         return dinero;
     }
 
-    public void setDinero(String dinero) {
+    public void setDinero(Integer dinero) {
         this.dinero = dinero;
     }
 
-    public String getIntensidad() {
+    public Integer getIntensidad() {
         return intensidad;
     }
 
-    public void setIntensidad(String intensidad) {
+    public void setIntensidad(Integer intensidad) {
         this.intensidad = intensidad;
     }
 
-    public String getCercania() {
+    public Integer getCercania() {
         return cercania;
     }
 
-    public void setCercania(String cercania) {
+    public void setCercania(Integer cercania) {
         this.cercania = cercania;
     }
 
-    public String getFacilidad() {
+    public Integer getFacilidad() {
         return facilidad;
     }
 
-    public void setFacilidad(String facilidad) {
+    public void setFacilidad(Integer facilidad) {
         this.facilidad = facilidad;
     }
 }

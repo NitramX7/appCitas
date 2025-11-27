@@ -2,19 +2,19 @@ package com.example.appcitas
 
 import retrofit2.Call
 import retrofit2.http.Body
-import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface UsuarioApi {
 
-    // Crear usuario
+    // COINCIDE con @PostMapping("/usuarios")
     @POST("usuarios")
-    fun registrar(@Body usuario: Usuario): Call<Usuario>
+    fun registrar(
+        @Body usuario: Usuario
+    ): Call<Usuario>
 
-    // Obtener lista de usuarios
-    @GET("usuarios")
-    fun getUsuarios(): Call<List<Usuario>>
-
+    // COINCIDE con @PostMapping("/login")
     @POST("login")
-    fun login(@Body loginRequest: LoginRequest): Call<Usuario>
+    fun login(
+        @Body loginRequest: LoginRequest
+    ): Call<Usuario>
 }
