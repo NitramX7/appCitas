@@ -1,4 +1,4 @@
-package com.appcitas.reporitory;
+package com.appcitas.repository;
 
 import java.util.Optional;
 

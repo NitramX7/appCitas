@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.appcitas.model.Usuario;
-import com.appcitas.reporitory.UsuarioRepo;
+import com.appcitas.repository.UsuarioRepo;
 import com.appcitas.service.UsuarioService;
 
 @Service

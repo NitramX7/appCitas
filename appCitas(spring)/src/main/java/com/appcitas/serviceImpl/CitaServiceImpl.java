@@ -6,8 +6,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.appcitas.dto.CitaFiltroRequest;
 import com.appcitas.model.Cita;
-import com.appcitas.reporitory.CitaRepo;
+import com.appcitas.repository.CitaRepo;
 import com.appcitas.service.CitaService;
 
 @Service
@@ -47,11 +48,21 @@ public class CitaServiceImpl implements CitaService {
     @Override
     public Cita updateCita(Cita citaActualizar) {
         if (citaActualizar != null &&
-            citaRepositorio.findById(citaActualizar.getId()).isPresent()) {
+                citaRepositorio.findById(citaActualizar.getId()).isPresent()) {
 
             citaRepositorio.save(citaActualizar);
             return citaActualizar;
         }
         return null;
+    }
+
+    @Override
+    public List<Cita> filtrarCitas(CitaFiltroRequest filtros) {
+        return citaRepositorio.filtrarCitas(
+                filtros.getTemporada(),
+                filtros.getDinero(),
+                filtros.getIntensidad(),
+                filtros.getCercania(),
+                filtros.getFacilidad());
     }
 }

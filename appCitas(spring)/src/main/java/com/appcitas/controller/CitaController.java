@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.appcitas.dto.CitaFiltroRequest;
 import com.appcitas.model.Cita;
 import com.appcitas.service.CitaService;
 
@@ -34,6 +35,11 @@ public class CitaController {
     @PostMapping(value = "/citas")
     public Cita addCita(@RequestBody Cita cita) {
         return citaService.saveCita(cita);
+    }
+
+    @PostMapping(value = "/citas/filtrar")
+    public List<Cita> filtrarCitas(@RequestBody CitaFiltroRequest filtros) {
+        return citaService.filtrarCitas(filtros);
     }
 
     @DeleteMapping(value = "/citas/delete/{id}")
