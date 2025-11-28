@@ -18,7 +18,7 @@ public interface CitaRepo extends JpaRepository<Cita, Long> {
             "AND (:facilidad IS NULL OR c.facilidad = :facilidad)"
     )
     List<Cita> filtrarCitas(
-            @Param("temporada") String temporada,
+            @Param("temporada") Integer temporada,
             @Param("dinero") Integer dinero,
             @Param("intensidad") Integer intensidad,
             @Param("cercania") Integer cercania,

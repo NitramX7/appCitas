@@ -2,17 +2,17 @@ package com.appcitas.dto;
 
 public class CitaFiltroRequest {
 
-    private String temporada;
+    private Integer temporada;
     private Integer dinero;
     private Integer intensidad;
     private Integer cercania;
     private Integer facilidad;
 
-    public String getTemporada() {
+    public Integer getTemporada() {
         return temporada;
     }
 
-    public void setTemporada(String temporada) {
+    public void setTemporada(Integer temporada) {
         this.temporada = temporada;
     }
 

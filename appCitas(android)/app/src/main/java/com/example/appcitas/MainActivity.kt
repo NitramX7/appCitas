@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         val email = binding.email.text.toString().trim()
         val passPlain = binding.pass.text.toString().trim()
 
-        if (username.isEmpty() || email.isEmpty() || passPlain.isEmpty()) {
+        if (email.isEmpty() || passPlain.isEmpty()) {
             Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show()
             return
         }

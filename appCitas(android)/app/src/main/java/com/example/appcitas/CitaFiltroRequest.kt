@@ -1,5 +1,5 @@
 data class CitaFiltroRequest(
-    val temporada: String? = null,
+    val temporada: Int? = null,
     val dinero: Int? = null,
     val intensidad: Int? = null,
     val cercania: Int? = null,

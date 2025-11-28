@@ -15,14 +15,22 @@ import androidx.compose.material3.RadioButton
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.wear.compose.material.RadioButton
 import kotlinx.coroutines.launch
+import androidx.recyclerview.widget.RecyclerView
+import android.widget.TextView
+
 
 class Pantalla1 : AppCompatActivity() {
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_pantalla1)
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -109,11 +117,12 @@ class Pantalla1 : AppCompatActivity() {
                 val tempInvierno = dialogView.findViewById<RadioButton>(R.id.temp_invierno)
                 val tempOtro = dialogView.findViewById<RadioButton>(R.id.temp_otro)
 
-                val temporadaFinal = when {
-                    tempVerano.isChecked -> "VERANO"
-                    tempInvierno.isChecked -> "INVIERNO"
-                    tempOtro.isChecked -> "OTRA"
-                    tempCualquiera.isChecked -> null  // no aplicar filtro
+
+                val temporadaSeleccionada: Int? = when {
+                    tempInvierno.isChecked -> 1
+                    tempVerano.isChecked   -> 2
+                    tempOtro.isChecked     -> 3
+                    tempCualquiera.isChecked -> null   // no filtrar por temporada
                     else -> null
                 }
 
@@ -122,7 +131,7 @@ class Pantalla1 : AppCompatActivity() {
                 //   ARMAR OBJETO FILTRO
                 // ============================
                 val filtro = CitaFiltroRequest(
-                    temporada = temporadaFinal,
+                    temporada = temporadaSeleccionada,
                     dinero = dineroSeleccionado,
                     intensidad = intensidadSeleccionada,
                     cercania = cercaniaSeleccionada,
@@ -146,14 +155,73 @@ class Pantalla1 : AppCompatActivity() {
     private fun aplicarFiltrosYCargarCitas(filtro: CitaFiltroRequest) {
         lifecycleScope.launch {
             try {
-                // 1. Llamada a la API
                 val citas = RetrofitClient.citaApi.filtrarCitas(filtro)
 
-                // 2. Mostrar resultado en Logcat (por ahora)
                 Log.d("CITAS_FILTRADAS", "Resultado: $citas")
 
-                // 3. Aquí actualizaremos la lista cuando la tengas
-                // adapter.submitList(citas)
+                if (citas.isEmpty()) {
+                    Toast.makeText(this@Pantalla1, "No se han encontrado citas", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                val cita = citas[0]   // primera cita recomendada
+
+                val dialogView = layoutInflater.inflate(R.layout.dialog_cita_resultado, null)
+
+                val txtTitulo = dialogView.findViewById<TextView>(R.id.txtTituloDialog)
+                val txtDescripcion = dialogView.findViewById<TextView>(R.id.txtDescripcionDialog)
+                val txtDetalles = dialogView.findViewById<TextView>(R.id.txtDetallesDialog)
+
+                txtTitulo.text = cita.titulo
+                txtDescripcion.text = cita.descripcion
+
+                val cercaniaTxt = when (cita.cercania) {
+                    1 -> "Cerca"
+                    2 -> "Media"
+                    3 -> "Lejos"
+                    else -> "-"
+                }
+
+                val dineroTxt = when (cita.dinero) {
+                    1 -> "Bajo"
+                    2 -> "Medio"
+                    3 -> "Alto"
+                    else -> "-"
+                }
+
+                val facilidadTxt = when (cita.facilidad) {
+                    1 -> "Fácil"
+                    2 -> "Normal"
+                    3 -> "Difícil"
+                    else -> "-"
+                }
+
+                val intensidadTxt = when (cita.intensidad) {
+                    1 -> "Tranqui"
+                    2 -> "Normal"
+                    3 -> "Intenso"
+                    else -> "-"
+                }
+
+                val temporadaTxt = when (cita.temporada) {
+                    1 -> "Invierno"
+                    2 -> "Verano"
+                    3 -> "Otra"
+                    else -> "Cualquiera"
+                }
+
+                txtDetalles.text =
+                    "Cercanía: $cercaniaTxt\n" +
+                            "Dinero: $dineroTxt\n" +
+                            "Facilidad: $facilidadTxt\n" +
+                            "Intensidad: $intensidadTxt\n" +
+                            "Temporada: $temporadaTxt"
+
+                AlertDialog.Builder(this@Pantalla1)
+                    .setView(dialogView)
+                    .setCancelable(true)
+                    .setPositiveButton("Cerrar", null)
+                    .show()
 
             } catch (e: Exception) {
                 Log.e("CITAS_FILTRADAS", "Error cargando citas", e)
@@ -161,5 +229,8 @@ class Pantalla1 : AppCompatActivity() {
             }
         }
     }
+
+
+
 
 }

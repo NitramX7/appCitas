@@ -1,4 +1,4 @@
-package com.example.appcitas
+package service
 
 import CitaFiltroRequest
 import com.example.appcitas.model.Cita

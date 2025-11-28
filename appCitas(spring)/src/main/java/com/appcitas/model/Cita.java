@@ -37,7 +37,7 @@ public class Cita implements Serializable {
     String descripcion;
 
     @Column
-    String temporada;
+    Integer temporada;
 
     @Column
     int dinero;
@@ -92,11 +92,11 @@ public class Cita implements Serializable {
         this.descripcion = descripcion;
     }
 
-    public String getTemporada() {
+    public Integer getTemporada() {
         return temporada;
     }
 
-    public void setTemporada(String temporada) {
+    public void setTemporada(Integer temporada) {
         this.temporada = temporada;
     }
 
