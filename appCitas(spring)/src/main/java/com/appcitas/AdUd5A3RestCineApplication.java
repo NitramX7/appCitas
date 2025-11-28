@@ -9,7 +9,7 @@ public class AdUd5A3RestCineApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(AdUd5A3RestCineApplication.class, args);
 	}
-	
-	//probando repositorio
+
+	// probando repositorio para gabi
 
 }
