@@ -26,7 +26,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         return usuarioRepositorio.findById(id);
     }
 
-
     @Override
     public Usuario saveUsuario(Usuario nuevoUsuario) {
 
@@ -50,14 +49,14 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public Usuario updateUsuario(Usuario usuarioActualizar) {
         if (usuarioActualizar != null &&
-            usuarioRepositorio.findById(usuarioActualizar.getId()).isPresent()) {
+                usuarioRepositorio.findById(usuarioActualizar.getId()).isPresent()) {
 
             usuarioRepositorio.save(usuarioActualizar);
             return usuarioActualizar;
         }
         return null;
     }
-    
+
     @Override
     public Usuario login(String email, String passwordHash) {
 
@@ -69,5 +68,11 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
 
         return usuario;
+    }
+
+    @Override
+    public Usuario findByEmail(String email) {
+        return usuarioRepositorio.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + email));
     }
 }

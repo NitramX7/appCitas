@@ -15,6 +15,9 @@
         android:theme="@style/Theme.AppCitas"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".CrearCita"
+            android:exported="false" />
+        <activity
             android:name=".Pantalla1"
             android:exported="false" />
         <activity

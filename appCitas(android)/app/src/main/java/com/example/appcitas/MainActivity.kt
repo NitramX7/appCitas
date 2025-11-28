@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.appcitas.databinding.ActivityMainBinding
+import com.example.appcitas.model.Usuario
 import com.google.firebase.auth.FirebaseAuth
 import java.security.MessageDigest
 
@@ -21,11 +22,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding : ActivityMainBinding
     private lateinit var firebaseAuth: FirebaseAuth
 
-    private fun enviarDatos() {
+    private fun enviarDatos(user : Usuario) {
 
         val username = binding.user.text.toString().trim()
         val email = binding.email.text.toString().trim()
         val passPlain = binding.pass.text.toString().trim()
+        val id = user.id!!.toLong()
 
         if (email.isEmpty() || passPlain.isEmpty()) {
             Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show()
@@ -33,11 +35,13 @@ class MainActivity : AppCompatActivity() {
         }
 
 
+
         val passHash = hashPassword(passPlain)
 
         // 👉 Guardamos en cache lo que quieras reutilizar
         cache.edit().putString("username", username)
             .putString("email", email)
+            .putLong("id", id)
             .apply()
 
         val ventanaEnvio = Intent(this, Pantalla1::class.java)
@@ -74,6 +78,7 @@ class MainActivity : AppCompatActivity() {
         crearUser.setOnClickListener {
             registrarUsuarioFirebase()
             registrarUsuario()
+            iniciarSesion()
         }
     }
 
@@ -139,7 +144,7 @@ class MainActivity : AppCompatActivity() {
         val password = hashPassword(passPlain)
 
         // 3. Crear objeto Usuario igual que en el backend
-        val usuario = Usuario(
+        val usuario = com.example.appcitas.model.Usuario(
             id = null,
             username = username,
             email = email,
@@ -162,7 +167,7 @@ class MainActivity : AppCompatActivity() {
                                 "Usuario creado correctamente",
                                 Toast.LENGTH_LONG
                             ).show()
-                            enviarDatos()
+
 
                         }
                         409 -> {
@@ -229,8 +234,11 @@ class MainActivity : AppCompatActivity() {
                                 Toast.LENGTH_LONG
                             ).show()
 
-                            // Aquí puedes guardar el usuario en cache si quieres:
-                            enviarDatos()
+
+
+                            if (usuario != null) {
+                                enviarDatos(usuario)
+                            }
 
                         }
 

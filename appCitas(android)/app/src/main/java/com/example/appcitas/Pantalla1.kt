@@ -2,41 +2,125 @@ package com.example.appcitas
 
 import CitaFiltroRequest
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.material3.RadioButton
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.wear.compose.material.RadioButton
+import com.example.appcitas.databinding.ActivityMainBinding
+import com.example.appcitas.databinding.ActivityPantalla1Binding
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.navigation.NavigationView
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
-import androidx.recyclerview.widget.RecyclerView
-import android.widget.TextView
-
 
 class Pantalla1 : AppCompatActivity() {
+    private lateinit var binding : ActivityPantalla1Binding
 
 
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navView: NavigationView
+    private lateinit var toolbar: MaterialToolbar
+
+    private lateinit var cache : SharedPreferences
+
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_pantalla1)
 
+        binding = ActivityPantalla1Binding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        cache = getSharedPreferences("cache", MODE_PRIVATE)
+        val username = cache.getString("username", "")
+        val id = cache.getLong("id", 0L)
+
+        binding.saludo.text = "Hola, $id"
+
+
+
+
+
+        auth = FirebaseAuth.getInstance()
+
+        // --- ¡AÑADE ESTA COMPROBACIÓN AQUÍ! ---
+        if (auth.currentUser == null) {
+            // Si no hay sesión, no dejes que el usuario vea esta pantalla.
+            // Redirige al Login.
+            val intent = Intent(this, MainActivity::class.java) // <-- CAMBIA LoginActivity por el nombre de tu Activity de Login
+            startActivity(intent)
+            finish() // Cierra Pantalla1 para que no se quede en el historial
+            return   // Detiene la ejecución para no inflar la vista innecesariamente
+        }
+        enableEdgeToEdge()
+
+
+        // ─────────────────────────────
+        // 1. REFERENCIAS DEL DRAWER
+        // ─────────────────────────────
+        drawerLayout = findViewById(R.id.drawerLayout)
+        navView = findViewById(R.id.navView)
+        toolbar = findViewById(R.id.toolbar)
+
+
+
+        // Toolbar como ActionBar
+        setSupportActionBar(toolbar)
+
+        // Botón hamburguesa
+        val toggle = ActionBarDrawerToggle(
+            this,
+            drawerLayout,
+            toolbar,
+            R.string.open_drawer,
+            R.string.close_drawer
+        )
+        drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        // Listener del menú lateral
+        navView.setNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.menu_crear_cita -> {
+                    // Ir a la pantalla de crear cita
+                    val intent = Intent(this, CrearCita::class.java)
+                    startActivity(intent)
+                }
+                R.id.menu_lista_citas -> {
+                    // TODO: cuando tengas la lista de citas
+                    Toast.makeText(this, "Mis citas (pendiente)", Toast.LENGTH_SHORT).show()
+                }
+                R.id.menu_ajustes -> {
+                    Toast.makeText(this, "Ajustes (pendiente)", Toast.LENGTH_SHORT).show()
+                }
+            }
+            drawerLayout.closeDrawers()
+            true
+        }
+
+        // Opcional: mantener lo del edge-to-edge si quieres
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
+        // ─────────────────────────────
+        // 2. TUS BOTONES ORIGINALES
+        // ─────────────────────────────
         val btnCita = findViewById<Button>(R.id.btnCita)
         val btnAtras = findViewById<Button>(R.id.btnAtras)
 
@@ -51,7 +135,7 @@ class Pantalla1 : AppCompatActivity() {
             // 1. Inflar la vista del diálogo
             val dialogView = layoutInflater.inflate(R.layout.dialog_filtros, null)
 
-            // 2. Crear el diálogo asdf
+            // 2. Crear el diálogo
             val dialog = AlertDialog.Builder(this)
                 .setView(dialogView)
                 .create()
@@ -111,12 +195,10 @@ class Pantalla1 : AppCompatActivity() {
                 // ============================
                 //   TEMPORADA
                 // ============================
-
                 val tempCualquiera = dialogView.findViewById<RadioButton>(R.id.temp_cualquiera)
                 val tempVerano = dialogView.findViewById<RadioButton>(R.id.temp_verano)
                 val tempInvierno = dialogView.findViewById<RadioButton>(R.id.temp_invierno)
                 val tempOtro = dialogView.findViewById<RadioButton>(R.id.temp_otro)
-
 
                 val temporadaSeleccionada: Int? = when {
                     tempInvierno.isChecked -> 1
@@ -125,7 +207,6 @@ class Pantalla1 : AppCompatActivity() {
                     tempCualquiera.isChecked -> null   // no filtrar por temporada
                     else -> null
                 }
-
 
                 // ============================
                 //   ARMAR OBJETO FILTRO
@@ -150,8 +231,8 @@ class Pantalla1 : AppCompatActivity() {
             }
 
         }
-
     }
+
     private fun aplicarFiltrosYCargarCitas(filtro: CitaFiltroRequest) {
         lifecycleScope.launch {
             try {
@@ -229,8 +310,4 @@ class Pantalla1 : AppCompatActivity() {
             }
         }
     }
-
-
-
-
 }

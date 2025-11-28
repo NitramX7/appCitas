@@ -1,5 +1,7 @@
 package com.example.appcitas
 
+import com.example.appcitas.APIS.CitaApi
+import com.example.appcitas.APIS.UsuarioApi
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 

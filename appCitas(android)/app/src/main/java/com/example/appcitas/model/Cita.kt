@@ -4,9 +4,10 @@ data class Cita(
     val id: Long,
     val titulo: String,
     val descripcion: String,
-    val temporada: Integer,
-    val dinero: Integer,
-    val intensidad: Integer,
-    val cercania: Integer,
-    val facilidad: Integer
+    val temporada: Int?,
+    val dinero: Int?,
+    val intensidad: Int?,
+    val cercania: Int?,
+    val facilidad: Int?,
+    val creadorId: String
 )
