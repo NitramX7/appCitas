@@ -9,5 +9,5 @@ data class Cita(
     val intensidad: Int?,
     val cercania: Int?,
     val facilidad: Int?,
-    val creadorId: Long
+    val creadorId: Long?
 )

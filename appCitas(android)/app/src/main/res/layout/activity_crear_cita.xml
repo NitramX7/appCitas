@@ -83,6 +83,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     app:singleSelection="true"
+                    app:checkedButton="@id/btnTemporadaMedia"
                     app:layout_constraintTop_toBottomOf="@id/tvTemporadaLabel"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent">
@@ -126,6 +127,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     app:singleSelection="true"
+                    app:checkedButton="@id/btnDineroMedio"
                     app:layout_constraintTop_toBottomOf="@id/tvDineroLabel"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent">
@@ -169,6 +171,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     app:singleSelection="true"
+                    app:checkedButton="@id/btnIntensidadMedia"
                     app:layout_constraintTop_toBottomOf="@id/tvIntensidadLabel"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent">
@@ -212,6 +215,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     app:singleSelection="true"
+                    app:checkedButton="@id/btnCercaniaMedia"
                     app:layout_constraintTop_toBottomOf="@id/tvCercaniaLabel"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent">
@@ -255,6 +259,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     app:singleSelection="true"
+                    app:checkedButton="@id/btnFacilidadMedia"
                     app:layout_constraintTop_toBottomOf="@id/tvFacilidadLabel"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent">

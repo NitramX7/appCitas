@@ -48,7 +48,7 @@ class Pantalla1 : AppCompatActivity() {
         val username = cache.getString("username", "")
         val id = cache.getLong("id", 0L)
 
-        binding.saludo.text = "Hola, $id"
+        binding.saludo.text = "Hola, ${cache.getString("username","")}"
 
 
 

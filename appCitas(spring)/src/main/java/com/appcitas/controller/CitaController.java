@@ -32,7 +32,7 @@ public class CitaController {
         return citaService.findCitaById(id);
     }
 
-    @PostMapping(value = "/citas")
+    @PostMapping(value = "/citas/crear")
     public Cita addCita(@RequestBody Cita cita) {
         return citaService.saveCita(cita);
     }

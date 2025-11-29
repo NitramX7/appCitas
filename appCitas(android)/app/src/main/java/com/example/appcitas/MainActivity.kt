@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun enviarDatos(user : Usuario) {
 
-        val username = binding.user.text.toString().trim()
+        val username = user.username.toString()
         val email = binding.email.text.toString().trim()
         val passPlain = binding.pass.text.toString().trim()
         val id = user.id!!.toLong()

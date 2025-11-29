@@ -18,7 +18,9 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "citas")
-@Data @AllArgsConstructor @NoArgsConstructor
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Cita implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -40,16 +42,16 @@ public class Cita implements Serializable {
     Integer temporada;
 
     @Column
-    int dinero;
+    Integer dinero;
 
     @Column
-    int intensidad;
+    Integer intensidad;
 
     @Column
-    int cercania;
+    Integer cercania;
 
     @Column
-    int facilidad;
+    Integer facilidad;
 
     @Column(name = "es_default")
     boolean esDefault;
@@ -60,9 +62,8 @@ public class Cita implements Serializable {
     // --------------------------
     // RELACIÓN CON USUARIO (creador_id)
     // --------------------------
-    @ManyToOne
-    @JoinColumn(name = "creador_id")
-    private Usuario creador;
+    @Column(name = "creador_id")
+    private Long creadorId;
 
     // --------------------------
     // GETTERS / SETTERS
@@ -100,7 +101,7 @@ public class Cita implements Serializable {
         this.temporada = temporada;
     }
 
-    public int getDinero() {
+    public Integer getDinero() {
         return dinero;
     }
 
@@ -108,7 +109,7 @@ public class Cita implements Serializable {
         this.dinero = dinero;
     }
 
-    public int getIntensidad() {
+    public Integer getIntensidad() {
         return intensidad;
     }
 
@@ -116,7 +117,7 @@ public class Cita implements Serializable {
         this.intensidad = intensidad;
     }
 
-    public int getCercania() {
+    public Integer getCercania() {
         return cercania;
     }
 
@@ -124,7 +125,7 @@ public class Cita implements Serializable {
         this.cercania = cercania;
     }
 
-    public int getFacilidad() {
+    public Integer getFacilidad() {
         return facilidad;
     }
 
@@ -148,12 +149,12 @@ public class Cita implements Serializable {
         this.fechaCreacion = fechaCreacion;
     }
 
-    public Usuario getCreador() {
-        return creador;
+    public Long getCreadorId() {
+        return creadorId;
     }
 
-    public void setCreador(Usuario creador) {
-        this.creador = creador;
+    public void setCreadorId(Long creadorId) {
+        this.creadorId = creadorId;
     }
 
     public static long getSerialversionuid() {
