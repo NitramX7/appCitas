@@ -15,13 +15,16 @@
         android:theme="@style/Theme.AppCitas"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".CrearCita"
+            android:name="pantallas.MisCitas"
             android:exported="false" />
         <activity
-            android:name=".Pantalla1"
+            android:name="pantallas.CrearCita"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name="pantallas.Pantalla1"
+            android:exported="false" />
+        <activity
+            android:name="pantallas.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

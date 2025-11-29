@@ -51,4 +51,10 @@ public class CitaController {
     public Cita updateCita(@RequestBody Cita cita) {
         return citaService.updateCita(cita);
     }
+
+    @GetMapping("/citas/usuario/{id}")
+    public List<Cita> getCitasByUsuario(@PathVariable Long id) {
+        return citaService.getCitasByCreadorId(id);
+    }
+
 }

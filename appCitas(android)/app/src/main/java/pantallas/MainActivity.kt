@@ -1,20 +1,23 @@
-package com.example.appcitas
+package pantallas
 
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.appcitas.LoginRequest
+import com.example.appcitas.R
+import com.example.appcitas.RetrofitClient
 import com.example.appcitas.databinding.ActivityMainBinding
 import com.example.appcitas.model.Usuario
 import com.google.firebase.auth.FirebaseAuth
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.security.MessageDigest
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -144,7 +147,7 @@ class MainActivity : AppCompatActivity() {
         val password = hashPassword(passPlain)
 
         // 3. Crear objeto Usuario igual que en el backend
-        val usuario = com.example.appcitas.model.Usuario(
+        val usuario = Usuario(
             id = null,
             username = username,
             email = email,
@@ -154,11 +157,11 @@ class MainActivity : AppCompatActivity() {
 
         // 4. Llamar a la API
         RetrofitClient.api.registrar(usuario)
-            .enqueue(object : retrofit2.Callback<Usuario> {
+            .enqueue(object : Callback<Usuario> {
 
                 override fun onResponse(
-                    call: retrofit2.Call<Usuario>,
-                    response: retrofit2.Response<Usuario>
+                    call: Call<Usuario>,
+                    response: Response<Usuario>
                 ) {
                     when (response.code()) {
                         200 -> {
@@ -187,7 +190,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
-                override fun onFailure(call: retrofit2.Call<Usuario>, t: Throwable) {
+                override fun onFailure(call: Call<Usuario>, t: Throwable) {
                     Toast.makeText(
                         this@MainActivity,
                         "Error de conexión: ${t.message}",
@@ -218,11 +221,11 @@ class MainActivity : AppCompatActivity() {
 
         // 4. Llamada a la API
         RetrofitClient.api.login(loginRequest)
-            .enqueue(object : retrofit2.Callback<Usuario> {
+            .enqueue(object : Callback<Usuario> {
 
                 override fun onResponse(
-                    call: retrofit2.Call<Usuario>,
-                    response: retrofit2.Response<Usuario>
+                    call: Call<Usuario>,
+                    response: Response<Usuario>
                 ) {
                     when (response.code()) {
 
@@ -260,7 +263,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
-                override fun onFailure(call: retrofit2.Call<Usuario>, t: Throwable) {
+                override fun onFailure(call: Call<Usuario>, t: Throwable) {
                     Toast.makeText(
                         this@MainActivity,
                         "Error de conexión: ${t.message}",

@@ -1,4 +1,4 @@
-package com.example.appcitas
+package pantallas
 
 import CitaFiltroRequest
 import android.content.Intent
@@ -18,7 +18,10 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
-import com.example.appcitas.databinding.ActivityMainBinding
+import pantallas.CrearCita
+import pantallas.MainActivity
+import com.example.appcitas.R
+import com.example.appcitas.RetrofitClient
 import com.example.appcitas.databinding.ActivityPantalla1Binding
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.navigation.NavigationView
@@ -60,7 +63,10 @@ class Pantalla1 : AppCompatActivity() {
         if (auth.currentUser == null) {
             // Si no hay sesión, no dejes que el usuario vea esta pantalla.
             // Redirige al Login.
-            val intent = Intent(this, MainActivity::class.java) // <-- CAMBIA LoginActivity por el nombre de tu Activity de Login
+            val intent = Intent(
+                this,
+                MainActivity::class.java
+            ) // <-- CAMBIA LoginActivity por el nombre de tu Activity de Login
             startActivity(intent)
             finish() // Cierra Pantalla1 para que no se quede en el historial
             return   // Detiene la ejecución para no inflar la vista innecesariamente
@@ -100,8 +106,8 @@ class Pantalla1 : AppCompatActivity() {
                     startActivity(intent)
                 }
                 R.id.menu_lista_citas -> {
-                    // TODO: cuando tengas la lista de citas
-                    Toast.makeText(this, "Mis citas (pendiente)", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this, MisCitas::class.java)
+                    startActivity(intent)
                 }
                 R.id.menu_ajustes -> {
                     Toast.makeText(this, "Ajustes (pendiente)", Toast.LENGTH_SHORT).show()

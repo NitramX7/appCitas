@@ -4,6 +4,11 @@
     <group android:checkableBehavior="single">
 
         <item
+            android:id="@+id/menu_inicio"
+            android:icon="@android:drawable/ic_menu_myplaces"
+            android:title="Inicio" />
+
+        <item
             android:id="@+id/menu_crear_cita"
             android:icon="@android:drawable/ic_input_add"
             android:title="Crear cita" />

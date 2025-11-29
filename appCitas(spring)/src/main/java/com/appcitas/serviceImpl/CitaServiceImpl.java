@@ -65,5 +65,10 @@ public class CitaServiceImpl implements CitaService {
                 filtros.getCercania(),
                 filtros.getFacilidad());
     }
-    //probando el commit nuevo
+
+    @Override
+    public List<Cita> getCitasByCreadorId(Long creadorId) {
+        return citaRepositorio.findByCreadorId(creadorId);
+    }
+
 }
