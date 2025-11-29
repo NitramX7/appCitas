@@ -1,7 +1,7 @@
 package com.example.appcitas.model
 
 data class Cita(
-    val id: Long,
+    val id: Long? = null,
     val titulo: String,
     val descripcion: String,
     val temporada: Int?,
@@ -9,5 +9,5 @@ data class Cita(
     val intensidad: Int?,
     val cercania: Int?,
     val facilidad: Int?,
-    val creadorId: String
+    val creadorId: Long
 )

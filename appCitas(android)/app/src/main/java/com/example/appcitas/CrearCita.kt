@@ -1,5 +1,6 @@
 package com.example.appcitas
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -18,12 +19,19 @@ class CrearCita : AppCompatActivity() {
     private lateinit var binding: ActivityCrearCitaBinding
     private lateinit var auth: FirebaseAuth
 
+    private lateinit var cache: SharedPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCrearCitaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         auth = FirebaseAuth.getInstance()
+
+        cache = getSharedPreferences("cache", MODE_PRIVATE)
+
+        var id = cache.getLong("id", 0L)
+
 
         // Doble comprobación de seguridad
         if (auth.currentUser == null) {
@@ -39,7 +47,7 @@ class CrearCita : AppCompatActivity() {
         }
 
         binding.btnCrearCitaGuardar.setOnClickListener {
-            //guardarCita()
+            guardarCita(id)
         }
     }
 
@@ -90,10 +98,10 @@ class CrearCita : AppCompatActivity() {
         }
 
 
-    /* private fun guardarCita() {
+     private fun guardarCita(id : Long) {
          val titulo = binding.etTituloCita.text.toString().trim()
          val descripcion = binding.etDescripcionCita.text.toString().trim()
-         val creadorId = auth.currentUser?.uid
+
 
          // Validación de datos
          if (titulo.isEmpty() || descripcion.isEmpty()) {
@@ -101,10 +109,7 @@ class CrearCita : AppCompatActivity() {
              return
          }
 
-         if (creadorId == null) {
-             Toast.makeText(this, "Error de autenticación. Intente iniciar sesión de nuevo.", Toast.LENGTH_LONG).show()
-             return
-         }
+
 
          // Recoger valores de los botones
          val temporada = obtenerTemporada()
@@ -116,6 +121,7 @@ class CrearCita : AppCompatActivity() {
 
          // Crear el objeto para la petición
          val nuevaCitaRequest = Cita(
+             id = null,
              titulo = titulo,
              descripcion = descripcion,
              temporada = temporada,
@@ -123,7 +129,7 @@ class CrearCita : AppCompatActivity() {
              intensidad = intensidad,
              cercania = cercania,
              facilidad = facilidad,
-             //creadorId = creadorId
+             creadorId = id
          )
 
         // Llamar a la API usando una corrutina
@@ -138,7 +144,7 @@ class CrearCita : AppCompatActivity() {
                 Toast.makeText(this@CrearCita, "Error al guardar la cita: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
-    }*/
+    }
 
     // Función de ayuda para obtener el texto del botón seleccionado
     private fun obtenerValorBoton(group: MaterialButtonToggleGroup): String? {
