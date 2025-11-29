@@ -1,15 +1,21 @@
 package pantallas
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.appcitas.APIS.CitaApi
+import com.example.appcitas.R
+import com.example.appcitas.model.Cita
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.appbar.MaterialToolbar
-import com.example.appcitas.R
+
 
 class MisCitas : AppCompatActivity() {
 
@@ -18,6 +24,8 @@ class MisCitas : AppCompatActivity() {
     private lateinit var toolbar: MaterialToolbar
     private lateinit var rvMisCitas: RecyclerView
     private lateinit var layoutSinCitas: View
+
+    private lateinit var cache : SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +36,10 @@ class MisCitas : AppCompatActivity() {
         toolbar = findViewById(R.id.toolbar)
         rvMisCitas = findViewById(R.id.rvMisCitas)
         layoutSinCitas = findViewById(R.id.layoutSinCitas)
+
+        cache = getSharedPreferences("cache", MODE_PRIVATE)
+
+        var idUser = cache.getLong("id", 0L)
 
         setSupportActionBar(toolbar)
 
@@ -63,6 +75,12 @@ class MisCitas : AppCompatActivity() {
 
             drawerLayout.closeDrawers()
             true
+
+            cargarCitasUsuario(idUser)
         }
+        private void cargarCitasUsuario(long idUser){
+
+        }
+
     }
 }
