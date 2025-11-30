@@ -10,6 +10,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -43,6 +45,13 @@ class MisCitas : AppCompatActivity(), CitaActionListener {
         rvMisCitas = findViewById(R.id.rvMisCitas)
         layoutSinCitas = findViewById(R.id.layoutSinCitas)
         cache = getSharedPreferences("cache", MODE_PRIVATE)
+
+        // --- AÑADIENDO LA SOLUCIÓN AQUÍ ---
+        ViewCompat.setOnApplyWindowInsetsListener(toolbar) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
 
         setupToolbarAndDrawer()
         setupRecyclerView()
@@ -109,7 +118,6 @@ class MisCitas : AppCompatActivity(), CitaActionListener {
     }
 
     override fun onEditarCita(cita: Cita) {
-        // Navega a la nueva pantalla de edición, pasando el ID de la cita
         val intent = Intent(this, EditarCita::class.java).apply {
             putExtra("CITA_ID", cita.id)
         }

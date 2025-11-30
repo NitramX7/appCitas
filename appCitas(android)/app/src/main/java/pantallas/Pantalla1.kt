@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.RadioButton
 import android.widget.RadioGroup
@@ -17,6 +18,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import com.example.appcitas.R
@@ -53,6 +55,8 @@ class Pantalla1 : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
             return
         }
 
+        enableEdgeToEdge()
+
         binding = ActivityPantalla1Binding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -65,11 +69,18 @@ class Pantalla1 : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        enableEdgeToEdge()
-
         drawerLayout = findViewById(R.id.drawerLayout)
         navView = findViewById(R.id.navView)
         toolbar = findViewById(R.id.toolbar)
+
+        // --- INICIO DE LA SOLUCIÓN ---
+        ViewCompat.setOnApplyWindowInsetsListener(toolbar) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            // Añadimos un padding superior a la toolbar igual al alto de la barra de estado
+            view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+        // --- FIN DE LA SOLUCIÓN ---
 
         setSupportActionBar(toolbar)
 
@@ -84,12 +95,6 @@ class Pantalla1 : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
         toggle.syncState()
 
         navView.setNavigationItemSelectedListener(this)
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
 
         val btnCita = findViewById<Button>(R.id.btnCita)
         val btnAtras = findViewById<Button>(R.id.btnAtras)

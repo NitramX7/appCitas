@@ -33,9 +33,10 @@ public class CitaController {
         return citaService.findCitaById(id);
     }
 
-    @PostMapping(value = "/citas/crear")
-    public Cita addCita(@RequestBody Cita cita) {
-        return citaService.saveCita(cita);
+    @PostMapping(value = "/citas")
+    public ResponseEntity<Cita> addCita(@RequestBody Cita cita) {
+        Cita savedCita = citaService.saveCita(cita);
+        return new ResponseEntity<>(savedCita, org.springframework.http.HttpStatus.CREATED);
     }
 
     @PostMapping(value = "/citas/filtrar")
@@ -52,9 +53,11 @@ public class CitaController {
         return ResponseEntity.notFound().build();
     }
 
-    @PutMapping(value = "/citas")
-    public Cita updateCita(@RequestBody Cita cita) {
-        return citaService.updateCita(cita);
+    @PutMapping(value = "/citas/{id}")
+    public ResponseEntity<Cita> updateCita(@PathVariable Long id, @RequestBody Cita cita) {
+        cita.setId(id);
+        Cita updatedCita = citaService.updateCita(cita);
+        return ResponseEntity.ok(updatedCita);
     }
 
 }

@@ -36,7 +36,7 @@ class CrearCita : AppCompatActivity() {
     private lateinit var binding: ActivityCrearCitaBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var cache: SharedPreferences
-    private lateinit var googleSignInClient: GoogleSignInClient // Variable para cerrar sesión de Google
+    private lateinit var googleSignInClient: GoogleSignInClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,13 +46,11 @@ class CrearCita : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         cache = getSharedPreferences("cache", MODE_PRIVATE)
 
-        // --- INICIO: Configuración para cerrar sesión de Google ---
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
-        // --- FIN: Configuración para cerrar sesión de Google ---
 
         val idUsuario = cache.getLong("id", 0L)
 
@@ -66,6 +64,13 @@ class CrearCita : AppCompatActivity() {
         toolbar = findViewById(R.id.toolbar)
         rvMisCitas = findViewById(R.id.rvMisCitas)
         layoutSinCitas = findViewById(R.id.layoutSinCitas)
+
+        // --- AÑADIENDO LA SOLUCIÓN AQUÍ ---
+        ViewCompat.setOnApplyWindowInsetsListener(toolbar) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
 
         setSupportActionBar(toolbar)
 
@@ -94,18 +99,16 @@ class CrearCita : AppCompatActivity() {
                     startActivity(Intent(this, MisCitas::class.java))
                 }
                 
-                // --- INICIO: LÓGICA DE CERRAR SESIÓN AÑADIDA ---
                 R.id.menu_logout -> {
                     googleSignInClient.signOut().addOnCompleteListener {
-                        auth.signOut() // Cierra sesión en Firebase
-                        cache.edit().clear().apply() // Limpia los datos del usuario
+                        auth.signOut()
+                        cache.edit().clear().apply()
                         val intent = Intent(this, MainActivity::class.java)
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         startActivity(intent)
                         finish()
                     }
                 }
-                // --- FIN: LÓGICA DE CERRAR SESIÓN AÑADIDA ---
             }
 
             drawerLayout.closeDrawers()
@@ -123,7 +126,6 @@ class CrearCita : AppCompatActivity() {
         }
     }
 
-    // El resto de tu código original permanece intacto
     private fun obtenerTemporada(): Int = when (binding.groupTemporada.checkedButtonId) { R.id.btnTemporadaBaja -> 1; R.id.btnTemporadaMedia -> 2; R.id.btnTemporadaAlta -> 3; else -> 2 }
     private fun obtenerDinero(): Int = when (binding.groupDinero.checkedButtonId) { R.id.btnDineroBajo -> 1; R.id.btnDineroMedio -> 2; R.id.btnDineroAlto -> 3; else -> 2 }
     private fun obtenerIntensidad(): Int = when (binding.groupIntensidad.checkedButtonId) { R.id.btnIntensidadBaja -> 1; R.id.btnIntensidadMedia -> 2; R.id.btnIntensidadAlta -> 3; else -> 2 }

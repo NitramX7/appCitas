@@ -2,9 +2,11 @@
 <androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context="pantallas.EditarCita">
 
     <!-- CONTENIDO PRINCIPAL -->
     <LinearLayout
@@ -13,25 +15,22 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- TOOLBAR -->
+        <!-- 1. BARRA DE HERRAMIENTAS AÑADIDA -->
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/colorPrimary"
-            android:title="@string/app_name"
-            android:theme="@style/ThemeOverlay.Material3.ActionBar" />
+            android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar"
+            app:title="Editar Cita" />
 
-        <!-- SOLO 1 HIJO DIRECTO DENTRO DEL SCROLLVIEW -->
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:fillViewport="true">
 
-            <!-- AQUÍ VA EL ÚNICO HIJO: EL CONSTRAINTLAYOUT -->
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/contentLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="16dp">
@@ -83,7 +82,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     app:singleSelection="true"
-                    app:checkedButton="@id/btnTemporadaMedia"
                     app:layout_constraintTop_toBottomOf="@id/tvTemporadaLabel"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent">
@@ -127,7 +125,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     app:singleSelection="true"
-                    app:checkedButton="@id/btnDineroMedio"
                     app:layout_constraintTop_toBottomOf="@id/tvDineroLabel"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent">
@@ -171,7 +168,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     app:singleSelection="true"
-                    app:checkedButton="@id/btnIntensidadMedia"
                     app:layout_constraintTop_toBottomOf="@id/tvIntensidadLabel"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent">
@@ -215,7 +211,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     app:singleSelection="true"
-                    app:checkedButton="@id/btnCercaniaMedia"
                     app:layout_constraintTop_toBottomOf="@id/tvCercaniaLabel"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent">
@@ -259,7 +254,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     app:singleSelection="true"
-                    app:checkedButton="@id/btnFacilidadMedia"
                     app:layout_constraintTop_toBottomOf="@id/tvFacilidadLabel"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent">
@@ -286,13 +280,13 @@
                         android:text="Fácil" />
                 </com.google.android.material.button.MaterialButtonToggleGroup>
 
-                <!-- BOTÓN GUARDAR -->
+                <!-- 2. BOTÓN DE GUARDAR CAMBIOS -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnGuardarCambios"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
-                    android:text="Editar cita"
+                    android:text="Guardar Cambios"
                     app:cornerRadius="16dp"
                     app:layout_constraintTop_toBottomOf="@id/groupFacilidad"
                     app:layout_constraintStart_toStartOf="parent"
@@ -304,7 +298,7 @@
 
     </LinearLayout>
 
-    <!-- MENÚ LATERAL -->
+    <!-- MENÚ LATERAL (OPCIONAL, PERO BUENA PRÁCTICA) -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navView"
         android:layout_width="wrap_content"

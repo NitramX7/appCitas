@@ -1,6 +1,5 @@
 package pantallas
 
-// Imports corregidos para funcionar desde el paquete 'pantallas'
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -116,28 +115,26 @@ class MainActivity : AppCompatActivity() {
             nombre = displayName
         )
 
+        // Llamamos al endpoint de registrar/loguear con Google
         RetrofitClient.api.registrar(usuario).enqueue(object : Callback<Usuario> {
             override fun onResponse(call: Call<Usuario>, response: Response<Usuario>) {
-                when (response.code()) {
-                    200, 201 -> {
-                        val nuevoUsuario = response.body()
-                        Toast.makeText(this@MainActivity, "Nuevo usuario de Google registrado en tu base de datos", Toast.LENGTH_LONG).show()
-                        if (nuevoUsuario != null) {
-                            enviarDatos(nuevoUsuario)
-                        }
+                // --- LÓGICA MEJORADA ---
+                if (response.isSuccessful) {
+                    val usuarioRecibido = response.body()
+                    if (usuarioRecibido != null) {
+                        Toast.makeText(this@MainActivity, "Bienvenido, ${usuarioRecibido.username}", Toast.LENGTH_LONG).show()
+                        enviarDatos(usuarioRecibido) // Inicia sesión con los datos del servidor
                     }
-                    409 -> {
-                        Toast.makeText(this@MainActivity, "Este correo ya está registrado. Inicia sesión con tu contraseña.", Toast.LENGTH_LONG).show()
-                        firebaseAuth.signOut()
-                    }
-                    else -> {
-                        Toast.makeText(this@MainActivity, "Error en el servidor al registrar usuario de Google: ${response.code()}", Toast.LENGTH_LONG).show()
-                    }
+                } else {
+                    // Manejar errores del servidor (ej. 500 Internal Server Error)
+                    Toast.makeText(this@MainActivity, "Error del servidor: ${response.code()}", Toast.LENGTH_LONG).show()
+                    firebaseAuth.signOut() // Desloguear si el backend falla
                 }
             }
 
             override fun onFailure(call: Call<Usuario>, t: Throwable) {
-                Toast.makeText(this@MainActivity, "Error de conexión al registrar usuario de Google: ${t.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@MainActivity, "Error de conexión: ${t.message}", Toast.LENGTH_LONG).show()
+                firebaseAuth.signOut()
             }
         })
     }
