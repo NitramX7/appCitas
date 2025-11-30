@@ -17,6 +17,9 @@ import com.example.appcitas.R
 import com.example.appcitas.RetrofitClient
 import com.example.appcitas.databinding.ActivityCrearCitaBinding
 import com.example.appcitas.model.Cita
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
@@ -33,6 +36,7 @@ class CrearCita : AppCompatActivity() {
     private lateinit var binding: ActivityCrearCitaBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var cache: SharedPreferences
+    private lateinit var googleSignInClient: GoogleSignInClient // Variable para cerrar sesión de Google
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,9 +46,16 @@ class CrearCita : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         cache = getSharedPreferences("cache", MODE_PRIVATE)
 
+        // --- INICIO: Configuración para cerrar sesión de Google ---
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
+        // --- FIN: Configuración para cerrar sesión de Google ---
+
         val idUsuario = cache.getLong("id", 0L)
 
-        // Doble comprobación de seguridad
         if (auth.currentUser == null) {
             Toast.makeText(this, "Sesión no válida.", Toast.LENGTH_LONG).show()
             finish()
@@ -72,20 +83,29 @@ class CrearCita : AppCompatActivity() {
             when (item.itemId) {
 
                 R.id.menu_inicio -> {
-                    // Navega a Pantalla1 si no estamos ya en ella
-                    if (this !is Pantalla1) {
-                        startActivity(Intent(this, Pantalla1::class.java))
-                    }
+                    startActivity(Intent(this, Pantalla1::class.java))
                 }
 
                 R.id.menu_crear_cita -> {
-                    // Navega a CrearCita si no estamos ya allí
-                    //startActivity(Intent(this, CrearCita::class.java))
+                    Toast.makeText(this, "Ya estás en la pantalla de Crear Cita", Toast.LENGTH_SHORT).show()
                 }
 
                 R.id.menu_lista_citas -> {
                     startActivity(Intent(this, MisCitas::class.java))
                 }
+                
+                // --- INICIO: LÓGICA DE CERRAR SESIÓN AÑADIDA ---
+                R.id.menu_logout -> {
+                    googleSignInClient.signOut().addOnCompleteListener {
+                        auth.signOut() // Cierra sesión en Firebase
+                        cache.edit().clear().apply() // Limpia los datos del usuario
+                        val intent = Intent(this, MainActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                        finish()
+                    }
+                }
+                // --- FIN: LÓGICA DE CERRAR SESIÓN AÑADIDA ---
             }
 
             drawerLayout.closeDrawers()
@@ -103,45 +123,12 @@ class CrearCita : AppCompatActivity() {
         }
     }
 
-    private fun obtenerTemporada(): Int =
-        when (binding.groupTemporada.checkedButtonId) {
-            R.id.btnTemporadaBaja  -> 1
-            R.id.btnTemporadaMedia -> 2
-            R.id.btnTemporadaAlta  -> 3
-            else -> 2
-        }
-
-    private fun obtenerDinero(): Int =
-        when (binding.groupDinero.checkedButtonId) {
-            R.id.btnDineroBajo  -> 1
-            R.id.btnDineroMedio -> 2
-            R.id.btnDineroAlto  -> 3
-            else -> 2
-        }
-
-    private fun obtenerIntensidad(): Int =
-        when (binding.groupIntensidad.checkedButtonId) {
-            R.id.btnIntensidadBaja  -> 1
-            R.id.btnIntensidadMedia -> 2
-            R.id.btnIntensidadAlta  -> 3
-            else -> 2
-        }
-
-    private fun obtenerCercania(): Int =
-        when (binding.groupCercania.checkedButtonId) {
-            R.id.btnCercaniaBaja  -> 3   // Lejos
-            R.id.btnCercaniaMedia -> 2   // Normal
-            R.id.btnCercaniaAlta  -> 1   // Cerca
-            else -> 2
-        }
-
-    private fun obtenerFacilidad(): Int =
-        when (binding.groupFacilidad.checkedButtonId) {
-            R.id.btnFacilidadBaja  -> 3
-            R.id.btnFacilidadMedia -> 2
-            R.id.btnFacilidadAlta  -> 1
-            else -> 2
-        }
+    // El resto de tu código original permanece intacto
+    private fun obtenerTemporada(): Int = when (binding.groupTemporada.checkedButtonId) { R.id.btnTemporadaBaja -> 1; R.id.btnTemporadaMedia -> 2; R.id.btnTemporadaAlta -> 3; else -> 2 }
+    private fun obtenerDinero(): Int = when (binding.groupDinero.checkedButtonId) { R.id.btnDineroBajo -> 1; R.id.btnDineroMedio -> 2; R.id.btnDineroAlto -> 3; else -> 2 }
+    private fun obtenerIntensidad(): Int = when (binding.groupIntensidad.checkedButtonId) { R.id.btnIntensidadBaja -> 1; R.id.btnIntensidadMedia -> 2; R.id.btnIntensidadAlta -> 3; else -> 2 }
+    private fun obtenerCercania(): Int = when (binding.groupCercania.checkedButtonId) { R.id.btnCercaniaBaja -> 3; R.id.btnCercaniaMedia -> 2; R.id.btnCercaniaAlta -> 1; else -> 2 }
+    private fun obtenerFacilidad(): Int = when (binding.groupFacilidad.checkedButtonId) { R.id.btnFacilidadBaja -> 3; R.id.btnFacilidadMedia -> 2; R.id.btnFacilidadAlta -> 1; else -> 2 }
 
     private fun guardarCita(idUsuario: Long) {
         val titulo = binding.etTituloCita.text.toString().trim()

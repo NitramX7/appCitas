@@ -23,7 +23,6 @@ import com.google.android.material.navigation.NavigationView
 import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.launch
 
-// 1. Implementa la interfaz del adapter
 class MisCitas : AppCompatActivity(), CitaActionListener {
 
     private lateinit var drawerLayout: DrawerLayout
@@ -81,7 +80,6 @@ class MisCitas : AppCompatActivity(), CitaActionListener {
     }
 
     private fun setupRecyclerView() {
-        // 2. Pasa 'this' como listener
         citasAdapter = CitasAdapter(mutableListOf(), this)
         rvMisCitas.layoutManager = LinearLayoutManager(this)
         rvMisCitas.adapter = citasAdapter
@@ -110,18 +108,15 @@ class MisCitas : AppCompatActivity(), CitaActionListener {
         }
     }
 
-    // --- 3. IMPLEMENTACIÓN DE MÉTODOS DE LA INTERFAZ ---
-
     override fun onEditarCita(cita: Cita) {
-        // Navega a la pantalla de creación/edición pasando el ID de la cita
-        val intent = Intent(this, CrearCita::class.java).apply {
+        // Navega a la nueva pantalla de edición, pasando el ID de la cita
+        val intent = Intent(this, EditarCita::class.java).apply {
             putExtra("CITA_ID", cita.id)
         }
         startActivity(intent)
     }
 
     override fun onEliminarCita(cita: Cita, position: Int) {
-        // Muestra un diálogo de confirmación
         AlertDialog.Builder(this)
             .setTitle("Confirmar Eliminación")
             .setMessage("¿Estás seguro de que quieres eliminar la cita '${cita.titulo}'?")
@@ -135,18 +130,13 @@ class MisCitas : AppCompatActivity(), CitaActionListener {
     private fun eliminarCitaEnServidor(cita: Cita, position: Int) {
         lifecycleScope.launch {
             try {
-                RetrofitClient.citaApi.eliminarCita(id = cita.id)
-
-
+                RetrofitClient.citaApi.eliminarCita(id = cita.id!!)
                 Toast.makeText(this@MisCitas, "Cita eliminada", Toast.LENGTH_SHORT).show()
                 citasAdapter.removeItem(position)
-
-                // Si es la última cita, muestra el layout de estado vacío
                 if (citasAdapter.itemCount == 0) {
                     rvMisCitas.visibility = View.GONE
                     layoutSinCitas.visibility = View.VISIBLE
                 }
-
             } catch (e: Exception) {
                 Log.e("ELIMINAR_CITA_ERROR", "Error al eliminar la cita", e)
                 Toast.makeText(this@MisCitas, "Error al eliminar: ${e.message}", Toast.LENGTH_LONG).show()

@@ -1,10 +1,12 @@
 package pantallas
 
+// Imports corregidos para funcionar desde el paquete 'pantallas'
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -13,35 +15,148 @@ import com.example.appcitas.R
 import com.example.appcitas.RetrofitClient
 import com.example.appcitas.databinding.ActivityMainBinding
 import com.example.appcitas.model.Usuario
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.security.MessageDigest
+import java.util.UUID
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var cache : SharedPreferences
-    private lateinit var binding : ActivityMainBinding
+    private lateinit var cache: SharedPreferences
+    private lateinit var binding: ActivityMainBinding
     private lateinit var firebaseAuth: FirebaseAuth
 
-    private fun enviarDatos(user : Usuario) {
+    private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
 
-        val username = user.username.toString()
-        val email = binding.email.text.toString().trim()
-        val passPlain = binding.pass.text.toString().trim()
-        val id = user.id!!.toLong()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        if (email.isEmpty() || passPlain.isEmpty()) {
-            Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show()
-            return
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
         }
 
+        firebaseAuth = FirebaseAuth.getInstance()
+        cache = getSharedPreferences("cache", MODE_PRIVATE)
 
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
 
-        val passHash = hashPassword(passPlain)
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        // 👉 Guardamos en cache lo que quieras reutilizar
+        googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                try {
+                    val account = task.getResult(ApiException::class.java)!!
+                    firebaseAuthWithGoogle(account.idToken!!) {
+                        handleBackendForGoogleUser(account.email!!, account.displayName ?: "Usuario de Google")
+                    }
+                } catch (e: ApiException) {
+                    Toast.makeText(this, "Fallo en el inicio de sesión con Google: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
+        if (firebaseAuth.currentUser != null) {
+            navegarAPantallaPrincipal(firebaseAuth.currentUser!!.email!!, firebaseAuth.currentUser!!.displayName ?: "Usuario")
+        }
+
+        binding.iniciarSes.setOnClickListener {
+            iniciarSesionFirebase()
+            iniciarSesion()
+        }
+
+        binding.crearUser.setOnClickListener {
+            registrarUsuarioFirebase()
+            registrarUsuario()
+        }
+
+        binding.googleSignInButton.setOnClickListener {
+            val signInIntent = googleSignInClient.signInIntent
+            googleSignInLauncher.launch(signInIntent)
+        }
+    }
+
+    private fun firebaseAuthWithGoogle(idToken: String, onSuccess: () -> Unit) {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        firebaseAuth.signInWithCredential(credential)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    Toast.makeText(this, "Autenticación con Google exitosa", Toast.LENGTH_SHORT).show()
+                    onSuccess()
+                } else {
+                    Toast.makeText(this, "Fallo en la autenticación con Firebase: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+    }
+
+    private fun handleBackendForGoogleUser(email: String, displayName: String) {
+        val randomPassword = UUID.randomUUID().toString()
+        val passwordHash = hashPassword(randomPassword)
+
+        val usuario = Usuario(
+            id = null,
+            username = displayName,
+            email = email,
+            password = passwordHash,
+            nombre = displayName
+        )
+
+        RetrofitClient.api.registrar(usuario).enqueue(object : Callback<Usuario> {
+            override fun onResponse(call: Call<Usuario>, response: Response<Usuario>) {
+                when (response.code()) {
+                    200, 201 -> {
+                        val nuevoUsuario = response.body()
+                        Toast.makeText(this@MainActivity, "Nuevo usuario de Google registrado en tu base de datos", Toast.LENGTH_LONG).show()
+                        if (nuevoUsuario != null) {
+                            enviarDatos(nuevoUsuario)
+                        }
+                    }
+                    409 -> {
+                        Toast.makeText(this@MainActivity, "Este correo ya está registrado. Inicia sesión con tu contraseña.", Toast.LENGTH_LONG).show()
+                        firebaseAuth.signOut()
+                    }
+                    else -> {
+                        Toast.makeText(this@MainActivity, "Error en el servidor al registrar usuario de Google: ${response.code()}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<Usuario>, t: Throwable) {
+                Toast.makeText(this@MainActivity, "Error de conexión al registrar usuario de Google: ${t.message}", Toast.LENGTH_LONG).show()
+            }
+        })
+    }
+
+    private fun navegarAPantallaPrincipal(email: String, username: String) {
+        cache.edit()
+            .putString("email", email)
+            .putString("username", username)
+            .apply()
+        val intent = Intent(this, Pantalla1::class.java)
+        startActivity(intent)
+        finish()
+    }
+
+    private fun enviarDatos(user : Usuario) {
+        val username = user.username.toString()
+        val email = user.email.toString()
+        val id = user.id!!.toLong()
+
         cache.edit().putString("username", username)
             .putString("email", email)
             .putLong("id", id)
@@ -49,42 +164,14 @@ class MainActivity : AppCompatActivity() {
 
         val ventanaEnvio = Intent(this, Pantalla1::class.java)
         startActivity(ventanaEnvio)
-
-
-
-    }
-    override fun onCreate(savedInstanceState: Bundle?) {
-
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-        firebaseAuth = FirebaseAuth.getInstance()
-
-        cache = getSharedPreferences("cache", MODE_PRIVATE)
-        var iniciarSesion = binding.iniciarSes
-        var crearUser = binding.crearUser
-
-        iniciarSesion.setOnClickListener {
-            iniciarSesionFirebase()
-            iniciarSesion()
-        }
-
-        crearUser.setOnClickListener {
-            registrarUsuarioFirebase()
-            registrarUsuario()
-            iniciarSesion()
-        }
+        finish()
     }
 
+    private fun hashPassword(password: String): String {
+        val bytes = MessageDigest.getInstance("SHA-256").digest(password.toByteArray(Charsets.UTF_8))
+        return bytes.joinToString("") { "%02x".format(it) }
+    }
+    
     private fun registrarUsuarioFirebase() {
         val email = binding.email.text.toString().trim()
         val pass = binding.pass.text.toString().trim()
@@ -97,9 +184,9 @@ class MainActivity : AppCompatActivity() {
         firebaseAuth.createUserWithEmailAndPassword(email, pass)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    Toast.makeText(this, "Usuario registrado correctamente", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Usuario registrado en Firebase", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this, "Error al registrar el usuario", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Error al registrar en Firebase: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                 }
             }
     }
@@ -116,20 +203,19 @@ class MainActivity : AppCompatActivity() {
         firebaseAuth.signInWithEmailAndPassword(email, pass)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    val user = firebaseAuth.currentUser
-                    cache.edit().putString("email", user?.email).apply()
-
-
+                    val user = task.result?.user
+                    navegarAPantallaPrincipal(user?.email!!, user?.displayName ?: binding.user.text.toString())
                 } else {
-                    Toast.makeText(this, "Error al iniciar sesión", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Error al iniciar sesión en Firebase: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                 }
             }
     }
 
     private fun cerrarSesion() {
-        firebaseAuth.signOut()
-        cache.edit().remove("email").apply()
-        // Aquí puedes redirigir al usuario a la pantalla de inicio de sesión
+        googleSignInClient.signOut().addOnCompleteListener {
+            firebaseAuth.signOut()
+            cache.edit().clear().apply()
+        }
     }
 
     private fun registrarUsuario() {
@@ -137,65 +223,25 @@ class MainActivity : AppCompatActivity() {
         val email = binding.email.text.toString().trim()
         val passPlain = binding.pass.text.toString().trim()
 
-        // 1. Validación básica
         if (username.isEmpty() || email.isEmpty() || passPlain.isEmpty()) {
             Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // 2. Contraseña que se enviará (si quieres, aquí puedes hacer hashPassword(passPlain))
         val password = hashPassword(passPlain)
+        val usuario = Usuario(id = null, username = username, email = email, password = password, nombre = null)
 
-        // 3. Crear objeto Usuario igual que en el backend
-        val usuario = Usuario(
-            id = null,
-            username = username,
-            email = email,
-            password = password,
-            nombre = null
-        )
-
-        // 4. Llamar a la API
         RetrofitClient.api.registrar(usuario)
             .enqueue(object : Callback<Usuario> {
-
-                override fun onResponse(
-                    call: Call<Usuario>,
-                    response: Response<Usuario>
-                ) {
-                    when (response.code()) {
-                        200 -> {
-                            Toast.makeText(
-                                this@MainActivity,
-                                "Usuario creado correctamente",
-                                Toast.LENGTH_LONG
-                            ).show()
-
-
-                        }
-                        409 -> {
-                            Toast.makeText(
-                                this@MainActivity,
-                                "Ese correo ya está registrado",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                        else -> {
-                            Toast.makeText(
-                                this@MainActivity,
-                                "Error en servidor: ${response.code()}",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
+                override fun onResponse(call: Call<Usuario>, response: Response<Usuario>) {
+                    if (response.isSuccessful){
+                        Toast.makeText(this@MainActivity, "Usuario Registrado en tu BBDD", Toast.LENGTH_SHORT).show()
+                    } else {
+                         Toast.makeText(this@MainActivity, "Fallo al registrar en tu BBDD: ${response.code()}", Toast.LENGTH_SHORT).show()
                     }
                 }
-
                 override fun onFailure(call: Call<Usuario>, t: Throwable) {
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Error de conexión: ${t.message}",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Toast.makeText(this@MainActivity, "Error de red (Retrofit): ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
     }
@@ -204,80 +250,29 @@ class MainActivity : AppCompatActivity() {
         val email = binding.email.text.toString().trim()
         val passPlain = binding.pass.text.toString().trim()
 
-        // 1. Validación básica
         if (email.isEmpty() || passPlain.isEmpty()) {
             Toast.makeText(this, "Introduce email y contraseña", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // 2. Hashear contraseña para enviarla al backend
         val passwordHash = hashPassword(passPlain)
+        val loginRequest = LoginRequest(email = email, password = passwordHash)
 
-        // 3. Crear objeto para la petición
-        val loginRequest = LoginRequest(
-            email = email,
-            password = passwordHash
-        )
-
-        // 4. Llamada a la API
         RetrofitClient.api.login(loginRequest)
             .enqueue(object : Callback<Usuario> {
-
-                override fun onResponse(
-                    call: Call<Usuario>,
-                    response: Response<Usuario>
-                ) {
-                    when (response.code()) {
-
-                        200 -> {
-                            val usuario = response.body()
-                            Toast.makeText(
-                                this@MainActivity,
-                                "Inicio de sesión correcto",
-                                Toast.LENGTH_LONG
-                            ).show()
-
-
-
-                            if (usuario != null) {
-                                enviarDatos(usuario)
-                            }
-
+                override fun onResponse(call: Call<Usuario>, response: Response<Usuario>) {
+                    if (response.isSuccessful){
+                        val user = response.body()
+                        if(user != null){
+                            enviarDatos(user)
                         }
-
-                        401 -> {
-                            Toast.makeText(
-                                this@MainActivity,
-                                "Email o contraseña incorrectos",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-
-                        else -> {
-                            Toast.makeText(
-                                this@MainActivity,
-                                "Error del servidor: ${response.code()}",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
+                    } else {
+                        Toast.makeText(this@MainActivity, "Error en login de tu BBDD: ${response.code()}", Toast.LENGTH_SHORT).show()
                     }
                 }
-
                 override fun onFailure(call: Call<Usuario>, t: Throwable) {
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Error de conexión: ${t.message}",
-                        Toast.LENGTH_LONG
-                    ).show()
+                     Toast.makeText(this@MainActivity, "Error de red en login (Retrofit): ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
-    }
-
-    private fun hashPassword(password: String): String {
-        val bytes = MessageDigest
-            .getInstance("SHA-256")
-            .digest(password.toByteArray(Charsets.UTF_8))
-
-        return bytes.joinToString("") { "%02x".format(it) }
     }
 }

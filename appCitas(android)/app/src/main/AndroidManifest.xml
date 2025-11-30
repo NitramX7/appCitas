@@ -14,21 +14,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCitas"
         android:usesCleartextTraffic="true">
-        <activity
-            android:name="pantallas.MisCitas"
-            android:exported="false" />
-        <activity
-            android:name="pantallas.CrearCita"
-            android:exported="false" />
-        <activity
-            android:name="pantallas.Pantalla1"
-            android:exported="false" />
-        <activity
-            android:name="pantallas.MainActivity"
-            android:exported="true">
+        
+        <activity android:name="pantallas.EditarCita" android:exported="false" />
+        <activity android:name=".CrudMenuActivity" android:exported="false" />
+        <activity android:name=".CitasActivity" android:exported="false" />
+        <activity android:name="pantallas.Pantalla1" android:exported="false" />
+        <activity android:name="pantallas.MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
