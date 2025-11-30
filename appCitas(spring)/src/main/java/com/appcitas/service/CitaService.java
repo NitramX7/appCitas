@@ -20,6 +20,4 @@ public interface CitaService {
 
     List<Cita> filtrarCitas(CitaFiltroRequest filtros);
 
-    List<Cita> getCitasByCreadorId(Long creadorId);
-
 }

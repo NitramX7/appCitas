@@ -63,12 +63,8 @@ public class CitaServiceImpl implements CitaService {
                 filtros.getDinero(),
                 filtros.getIntensidad(),
                 filtros.getCercania(),
-                filtros.getFacilidad());
-    }
-
-    @Override
-    public List<Cita> getCitasByCreadorId(Long creadorId) {
-        return citaRepositorio.findByCreadorId(creadorId);
+                filtros.getFacilidad(),
+                filtros.getCreadorId());
     }
 
 }

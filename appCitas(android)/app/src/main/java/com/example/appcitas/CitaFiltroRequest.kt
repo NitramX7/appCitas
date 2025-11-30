@@ -3,5 +3,6 @@ data class CitaFiltroRequest(
     val dinero: Int? = null,
     val intensidad: Int? = null,
     val cercania: Int? = null,
-    val facilidad: Int? = null
+    val facilidad: Int? = null,
+    val creadorId: Long? = null
 )

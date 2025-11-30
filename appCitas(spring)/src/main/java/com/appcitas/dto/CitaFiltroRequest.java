@@ -7,6 +7,7 @@ public class CitaFiltroRequest {
     private Integer intensidad;
     private Integer cercania;
     private Integer facilidad;
+    private Long creadorId;
 
     public Integer getTemporada() {
         return temporada;
@@ -46,5 +47,13 @@ public class CitaFiltroRequest {
 
     public void setFacilidad(Integer facilidad) {
         this.facilidad = facilidad;
+    }
+
+    public Long getCreadorId() {
+        return creadorId;
+    }
+
+    public void setCreadorId(Long creadorId) {
+        this.creadorId = creadorId;
     }
 }

@@ -14,14 +14,14 @@ public interface CitaRepo extends JpaRepository<Cita, Long> {
                         "AND (:dinero IS NULL OR c.dinero = :dinero) " +
                         "AND (:intensidad IS NULL OR c.intensidad = :intensidad) " +
                         "AND (:cercania IS NULL OR c.cercania = :cercania) " +
-                        "AND (:facilidad IS NULL OR c.facilidad = :facilidad)")
+                        "AND (:facilidad IS NULL OR c.facilidad = :facilidad) " +
+                        "AND (:creadorId IS NULL OR c.creadorId = :creadorId)")
         List<Cita> filtrarCitas(
                         @Param("temporada") Integer temporada,
                         @Param("dinero") Integer dinero,
                         @Param("intensidad") Integer intensidad,
                         @Param("cercania") Integer cercania,
-                        @Param("facilidad") Integer facilidad);
-
-        List<Cita> findByCreadorId(Long creadorId);
+                        @Param("facilidad") Integer facilidad,
+                        @Param("creadorId") Long creadorId);
 
 }
