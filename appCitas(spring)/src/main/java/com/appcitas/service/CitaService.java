@@ -14,7 +14,7 @@ public interface CitaService {
 
     public Cita saveCita(Cita nuevaCita);
 
-    public String deleteCita(Long id);
+    public boolean deleteCita(Long id);
 
     public Cita updateCita(Cita citaActualizar);
 

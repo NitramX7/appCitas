@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,9 +43,13 @@ public class CitaController {
         return citaService.filtrarCitas(filtros);
     }
 
-    @DeleteMapping(value = "/citas/delete/{id}")
-    public String deleteCita(@PathVariable Long id) {
-        return citaService.deleteCita(id);
+    @DeleteMapping(value = { "/citas/{id}", "/citas/delete/{id}" })
+    public ResponseEntity<Void> deleteCita(@PathVariable Long id) {
+        boolean deleted = citaService.deleteCita(id);
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @PutMapping(value = "/citas")

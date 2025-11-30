@@ -36,13 +36,13 @@ public class CitaServiceImpl implements CitaService {
     }
 
     @Override
-    public String deleteCita(Long id) {
+    public boolean deleteCita(Long id) {
         Optional<Cita> c = citaRepositorio.findById(id);
         if (c.isPresent()) {
             citaRepositorio.deleteById(id);
-            return "Cita eliminada satisfactoriamente";
+            return true;
         }
-        return "La cita no existe";
+        return false;
     }
 
     @Override
@@ -64,7 +64,8 @@ public class CitaServiceImpl implements CitaService {
                 filtros.getIntensidad(),
                 filtros.getCercania(),
                 filtros.getFacilidad(),
-                filtros.getCreadorId());
+                filtros.getCreadorId(),
+                filtros.getId());
     }
 
 }

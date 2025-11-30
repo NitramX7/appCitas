@@ -7,23 +7,24 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.appcitas.APIS.CitaApi
 import com.example.appcitas.R
 import com.example.appcitas.RetrofitClient
-
+import com.example.appcitas.adapters.CitaActionListener
 import com.example.appcitas.adapters.CitasAdapter
 import com.example.appcitas.model.Cita
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.launch
 
-class MisCitas : AppCompatActivity() {
+// 1. Implementa la interfaz del adapter
+class MisCitas : AppCompatActivity(), CitaActionListener {
 
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var navView: NavigationView
@@ -37,7 +38,6 @@ class MisCitas : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_mis_citas)
 
-        // 1. Inicializar vistas
         drawerLayout = findViewById(R.id.drawerLayout)
         navView = findViewById(R.id.navView)
         toolbar = findViewById(R.id.toolbar)
@@ -45,13 +45,9 @@ class MisCitas : AppCompatActivity() {
         layoutSinCitas = findViewById(R.id.layoutSinCitas)
         cache = getSharedPreferences("cache", MODE_PRIVATE)
 
-        // 2. Configurar Toolbar y Navegación
         setupToolbarAndDrawer()
-
-        // 3. Configurar RecyclerView
         setupRecyclerView()
 
-        // 4. Cargar las citas del usuario
         val idUsuario = cache.getLong("id", 0L)
         if (idUsuario != 0L) {
             cargarCitasUsuario(idUsuario)
@@ -71,13 +67,13 @@ class MisCitas : AppCompatActivity() {
                 R.id.menu_inicio -> {
                     if (this !is Pantalla1) {
                         startActivity(Intent(this, Pantalla1::class.java))
-                        finish() // Cierra esta actividad para no apilarlas
+                        finish()
                     }
                 }
                 R.id.menu_crear_cita -> {
                     startActivity(Intent(this, CrearCita::class.java))
                 }
-                R.id.menu_lista_citas -> { /* No hacer nada, ya estamos aquí */ }
+                R.id.menu_lista_citas -> { /* Ya estamos aquí */ }
             }
             drawerLayout.closeDrawers()
             true
@@ -85,7 +81,8 @@ class MisCitas : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        citasAdapter = CitasAdapter(emptyList()) // Inicializa con lista vacía
+        // 2. Pasa 'this' como listener
+        citasAdapter = CitasAdapter(mutableListOf(), this)
         rvMisCitas.layoutManager = LinearLayoutManager(this)
         rvMisCitas.adapter = citasAdapter
     }
@@ -93,27 +90,66 @@ class MisCitas : AppCompatActivity() {
     private fun cargarCitasUsuario(idUsuario: Long) {
         lifecycleScope.launch {
             try {
-                // Usamos el endpoint de filtrar, pasando el ID del creador
                 val filtro = CitaFiltroRequest(creadorId = idUsuario)
                 val citas = RetrofitClient.citaApi.filtrarCitas(filtro)
 
                 if (citas.isNotEmpty()) {
-                    // Si hay citas, actualiza el adapter y muestra el RecyclerView
                     citasAdapter.updateData(citas)
                     rvMisCitas.visibility = View.VISIBLE
                     layoutSinCitas.visibility = View.GONE
                 } else {
-                    // Si no hay citas, muestra el layout de estado vacío
+                    rvMisCitas.visibility = View.GONE
+                    layoutSinCitas.visibility = View.VISIBLE
+                }
+            } catch (e: Exception) {
+                Log.e("CARGAR_CITAS_ERROR", "Error al cargar las citas", e)
+                Toast.makeText(this@MisCitas, "Error al obtener tus citas", Toast.LENGTH_LONG).show()
+                rvMisCitas.visibility = View.GONE
+                layoutSinCitas.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    // --- 3. IMPLEMENTACIÓN DE MÉTODOS DE LA INTERFAZ ---
+
+    override fun onEditarCita(cita: Cita) {
+        // Navega a la pantalla de creación/edición pasando el ID de la cita
+        val intent = Intent(this, CrearCita::class.java).apply {
+            putExtra("CITA_ID", cita.id)
+        }
+        startActivity(intent)
+    }
+
+    override fun onEliminarCita(cita: Cita, position: Int) {
+        // Muestra un diálogo de confirmación
+        AlertDialog.Builder(this)
+            .setTitle("Confirmar Eliminación")
+            .setMessage("¿Estás seguro de que quieres eliminar la cita '${cita.titulo}'?")
+            .setPositiveButton("Eliminar") { _, _ ->
+                eliminarCitaEnServidor(cita, position)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun eliminarCitaEnServidor(cita: Cita, position: Int) {
+        lifecycleScope.launch {
+            try {
+                RetrofitClient.citaApi.eliminarCita(id = cita.id)
+
+
+                Toast.makeText(this@MisCitas, "Cita eliminada", Toast.LENGTH_SHORT).show()
+                citasAdapter.removeItem(position)
+
+                // Si es la última cita, muestra el layout de estado vacío
+                if (citasAdapter.itemCount == 0) {
                     rvMisCitas.visibility = View.GONE
                     layoutSinCitas.visibility = View.VISIBLE
                 }
 
             } catch (e: Exception) {
-                Log.e("CARGAR_CITAS_ERROR", "Error al cargar las citas del usuario", e)
-                Toast.makeText(this@MisCitas, "Error al obtener tus citas: ${e.message}", Toast.LENGTH_LONG).show()
-                // En caso de error, también mostramos el estado vacío
-                rvMisCitas.visibility = View.GONE
-                layoutSinCitas.visibility = View.VISIBLE
+                Log.e("ELIMINAR_CITA_ERROR", "Error al eliminar la cita", e)
+                Toast.makeText(this@MisCitas, "Error al eliminar: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }
