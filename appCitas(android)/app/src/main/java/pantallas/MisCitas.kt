@@ -16,6 +16,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.appcitas.R
 import com.example.appcitas.RetrofitClient
 import com.example.appcitas.adapters.CitaActionListener
@@ -34,6 +35,7 @@ class MisCitas : AppCompatActivity(), CitaActionListener {
     private lateinit var layoutSinCitas: View
     private lateinit var citasAdapter: CitasAdapter
     private lateinit var cache: SharedPreferences
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +46,7 @@ class MisCitas : AppCompatActivity(), CitaActionListener {
         toolbar = findViewById(R.id.toolbar)
         rvMisCitas = findViewById(R.id.rvMisCitas)
         layoutSinCitas = findViewById(R.id.layoutSinCitas)
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
         cache = getSharedPreferences("cache", MODE_PRIVATE)
 
         // --- AÑADIENDO LA SOLUCIÓN AQUÍ ---
@@ -55,6 +58,13 @@ class MisCitas : AppCompatActivity(), CitaActionListener {
 
         setupToolbarAndDrawer()
         setupRecyclerView()
+
+        swipeRefreshLayout.setOnRefreshListener {
+            val idUsuario = cache.getLong("id", 0L)
+            if (idUsuario != 0L) {
+                cargarCitasUsuario(idUsuario)
+            }
+        }
 
         val idUsuario = cache.getLong("id", 0L)
         if (idUsuario != 0L) {
@@ -95,6 +105,7 @@ class MisCitas : AppCompatActivity(), CitaActionListener {
     }
 
     private fun cargarCitasUsuario(idUsuario: Long) {
+        swipeRefreshLayout.isRefreshing = true
         lifecycleScope.launch {
             try {
                 val filtro = CitaFiltroRequest(creadorId = idUsuario)
@@ -113,6 +124,8 @@ class MisCitas : AppCompatActivity(), CitaActionListener {
                 Toast.makeText(this@MisCitas, "Error al obtener tus citas", Toast.LENGTH_LONG).show()
                 rvMisCitas.visibility = View.GONE
                 layoutSinCitas.visibility = View.VISIBLE
+            } finally {
+                swipeRefreshLayout.isRefreshing = false
             }
         }
     }

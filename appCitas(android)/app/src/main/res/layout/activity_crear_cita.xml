@@ -93,21 +93,21 @@
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Baja" />
+                        android:text="Invierno" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnTemporadaMedia"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Media" />
+                        android:text="Verano" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnTemporadaAlta"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Alta" />
+                        android:text="Otro" />
                 </com.google.android.material.button.MaterialButtonToggleGroup>
 
                 <!-- DINERO -->
