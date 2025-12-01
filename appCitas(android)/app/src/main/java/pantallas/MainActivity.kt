@@ -7,8 +7,6 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.example.appcitas.R
 import com.example.appcitas.RetrofitClient
 import com.example.appcitas.databinding.ActivityMainBinding
@@ -20,6 +18,7 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.UserProfileChangeRequest
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -27,8 +26,8 @@ import java.security.MessageDigest
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var cache: SharedPreferences
     private lateinit var binding: ActivityMainBinding
+    private lateinit var cache: SharedPreferences
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
@@ -38,25 +37,32 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupWindowInsets()
-
         firebaseAuth = FirebaseAuth.getInstance()
         cache = getSharedPreferences("cache", MODE_PRIVATE)
 
         setupGoogleSignIn()
 
+        // Lógica de botones con los IDs actualizados
+        binding.btnLogin.setOnClickListener {
+            val email = binding.tilEmail.editText?.text.toString()
+            val pass = binding.tilPassword.editText?.text.toString()
+            loginConEmail(email, pass)
+        }
+
+        binding.btnRegister.setOnClickListener {
+            val username = binding.tilUsername.editText?.text.toString()
+            val email = binding.tilEmail.editText?.text.toString()
+            val pass = binding.tilPassword.editText?.text.toString()
+            registrarConEmail(username, email, pass)
+        }
+
+        binding.btnGoogle.setOnClickListener {
+            iniciarSesionConGoogle()
+        }
+
+        // Si ya hay un usuario logueado, verificamos su token.
         if (firebaseAuth.currentUser != null) {
             verificarTokenConBackend(firebaseAuth.currentUser)
-        } else {
-            setupClickListeners()
-        }
-    }
-
-    private fun setupWindowInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
         }
     }
 
@@ -88,44 +94,51 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupClickListeners() {
-        binding.iniciarSes.setOnClickListener {
-            val email = binding.email.text.toString().trim()
-            val pass = binding.pass.text.toString().trim()
-            if (email.isEmpty() || pass.isEmpty()) {
-                Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            firebaseAuth.signInWithEmailAndPassword(email, pass)
-                .addOnCompleteListener(this) { task ->
-                    if (task.isSuccessful) {
-                        verificarTokenConBackend(task.result.user)
-                    } else {
-                        Toast.makeText(this, "Error al iniciar sesión: ${task.exception?.message}", Toast.LENGTH_LONG).show()
-                    }
+    private fun loginConEmail(email: String, pass: String) {
+        if (email.isEmpty() || pass.isEmpty()) {
+            Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show()
+            return
+        }
+        firebaseAuth.signInWithEmailAndPassword(email, pass)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    verificarTokenConBackend(task.result.user)
+                } else {
+                    Toast.makeText(this, "Error al iniciar sesión: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                 }
-        }
-
-        binding.crearUser.setOnClickListener {
-            val email = binding.email.text.toString().trim()
-            val pass = binding.pass.text.toString().trim()
-            if (email.isEmpty() || pass.isEmpty()) {
-                Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
             }
-            firebaseAuth.createUserWithEmailAndPassword(email, pass)
-                .addOnCompleteListener(this) { task ->
-                    if (task.isSuccessful) {
-                        verificarTokenConBackend(task.result.user)
-                    } else {
-                        Toast.makeText(this, "Error al registrar: ${task.exception?.message}", Toast.LENGTH_LONG).show()
-                    }
-                }
-        }
+    }
 
-        binding.googleSignInButton.setOnClickListener {
-            googleSignInLauncher.launch(googleSignInClient.signInIntent)
+    private fun registrarConEmail(username: String, email: String, pass: String) {
+        if (username.isEmpty() || email.isEmpty() || pass.isEmpty()) {
+            Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show()
+            return
         }
+        firebaseAuth.createUserWithEmailAndPassword(email, pass)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    // Usuario creado en Firebase, ahora actualizamos su perfil con el username
+                    val firebaseUser = task.result.user
+                    val profileUpdates = UserProfileChangeRequest.Builder()
+                        .setDisplayName(username)
+                        .build()
+
+                    firebaseUser?.updateProfile(profileUpdates)?.addOnCompleteListener { profileTask ->
+                        if (profileTask.isSuccessful) {
+                            // Perfil actualizado, ahora verificamos con el backend
+                            verificarTokenConBackend(firebaseUser)
+                        } else {
+                            Toast.makeText(this, "Error al guardar el nombre de usuario.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } else {
+                    Toast.makeText(this, "Error al registrar: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+    }
+
+    private fun iniciarSesionConGoogle() {
+        googleSignInLauncher.launch(googleSignInClient.signInIntent)
     }
 
     private fun verificarTokenConBackend(firebaseUser: FirebaseUser?) {
@@ -147,15 +160,13 @@ class MainActivity : AppCompatActivity() {
                                 guardarDatosYNavegar(usuarioBackend)
                             } else {
                                 Toast.makeText(this@MainActivity, "Error del servidor: ${response.code()}", Toast.LENGTH_LONG).show()
-                                firebaseAuth.signOut()
-                                setupClickListeners()
+                                cerrarSesion()
                             }
                         }
 
                         override fun onFailure(call: Call<Usuario>, t: Throwable) {
                             Toast.makeText(this@MainActivity, "Error de conexión: ${t.message}", Toast.LENGTH_LONG).show()
-                            firebaseAuth.signOut()
-                            setupClickListeners()
+                            cerrarSesion()
                         }
                     })
                 }
@@ -185,27 +196,15 @@ class MainActivity : AppCompatActivity() {
         finish()
     }
 
-    // --- TUS FUNCIONES ANTIGUAS (RESTAURADAS) ---
-
-    private fun hashPassword(password: String): String {
-        val bytes = MessageDigest.getInstance("SHA-256").digest(password.toByteArray(Charsets.UTF_8))
-        return bytes.joinToString("") { "%02x".format(it) }
-    }
-
-    private fun registrarUsuarioCoordinado() {
-        // Esta función ya no es necesaria con la nueva arquitectura,
-        // pero la mantenemos aquí por si la necesitas para otra cosa.
-    }
-
-    private fun iniciarSesionCoordinado() {
-        // Esta función ya no es necesaria con la nueva arquitectura,
-        // pero la mantenemos aquí por si la necesitas para otra cosa.
-    }
-
     private fun cerrarSesion() {
         googleSignInClient.signOut().addOnCompleteListener {
             firebaseAuth.signOut()
             cache.edit().clear().apply()
         }
+    }
+
+    private fun hashPassword(password: String): String {
+        val bytes = MessageDigest.getInstance("SHA-256").digest(password.toByteArray(Charsets.UTF_8))
+        return bytes.joinToString("") { "%02x".format(it) }
     }
 }

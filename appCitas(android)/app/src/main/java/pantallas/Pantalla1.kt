@@ -45,7 +45,7 @@ class Pantalla1 : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         auth = FirebaseAuth.getInstance()
 
         if (auth.currentUser == null) {
@@ -73,14 +73,11 @@ class Pantalla1 : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
         navView = findViewById(R.id.navView)
         toolbar = findViewById(R.id.toolbar)
 
-        // --- INICIO DE LA SOLUCIÓN ---
         ViewCompat.setOnApplyWindowInsetsListener(toolbar) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            // Añadimos un padding superior a la toolbar igual al alto de la barra de estado
             view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        // --- FIN DE LA SOLUCIÓN ---
 
         setSupportActionBar(toolbar)
 
@@ -93,6 +90,12 @@ class Pantalla1 : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
         )
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
+
+        // --- ACTUALIZAR HEADER CON USERNAME ---
+        val headerView = navView.getHeaderView(0)
+        val usernameTextView = headerView.findViewById<TextView>(R.id.tvNavHeaderUsername)
+        val username = cache.getString("username", "Usuario")
+        usernameTextView.text = "BIENVENIDO,\n$username!"
 
         navView.setNavigationItemSelectedListener(this)
 
@@ -173,30 +176,32 @@ class Pantalla1 : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.menu_inicio -> {
-                Toast.makeText(this, "Ya estás en Inicio", Toast.LENGTH_SHORT).show()
-            }
+            R.id.menu_inicio -> { /* Ya estamos aquí */ }
             R.id.menu_crear_cita -> {
-                val intent = Intent(this, CrearCita::class.java)
-                startActivity(intent)
+                startActivity(Intent(this, CrearCita::class.java))
             }
             R.id.menu_lista_citas -> {
-                val intent = Intent(this, MisCitas::class.java)
-                startActivity(intent)
+                startActivity(Intent(this, MisCitas::class.java))
             }
-            R.id.menu_logout -> {
-                googleSignInClient.signOut().addOnCompleteListener {
-                    auth.signOut()
-                    cache.edit().clear().apply()
-                    val intent = Intent(this, MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                    finish()
-                }
+            R.id.menu_perfil -> {
+                Toast.makeText(this, "Ir a Perfil (Pantalla por crear)", Toast.LENGTH_SHORT).show()
+            }
+            R.id.menu_cerrar_sesion -> {
+                cerrarSesion()
             }
         }
         drawerLayout.closeDrawers()
         return true
+    }
+
+    private fun cerrarSesion() {
+        FirebaseAuth.getInstance().signOut()
+        googleSignInClient.signOut() // Añadido para el logout de Google
+        cache.edit().clear().apply()
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 
     private fun aplicarFiltrosYCargarCitas(filtro: CitaFiltroRequest) {

@@ -1,24 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
 
-    <!-- Restaurando los IDs a los que tu código espera -->
-
-    <item
-        android:id="@+id/menu_inicio"
-        android:title="Inicio" />
-
-    <item
-        android:id="@+id/menu_crear_cita"
-        android:title="Crear Cita" />
-
-    <item
-        android:id="@+id/menu_lista_citas"
-        android:title="Mis Citas" />
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/menu_inicio"
+            android:icon="@android:drawable/ic_menu_today"
+            android:title="Inicio" />
+        <item
+            android:id="@+id/menu_crear_cita"
+            android:icon="@android:drawable/ic_menu_add"
+            android:title="Crear Cita" />
+        <item
+            android:id="@+id/menu_lista_citas"
+            android:icon="@android:drawable/ic_menu_agenda"
+            android:title="Mis Citas" />
+        <item
+            android:id="@+id/menu_perfil"
+            android:icon="@android:drawable/ic_menu_myplaces"
+            android:title="Perfil" />
+    </group>
 
     <item android:title="">
         <menu>
             <item
-                android:id="@+id/menu_logout"
+                android:id="@+id/menu_cerrar_sesion"
+                android:icon="@android:drawable/ic_menu_revert"
                 android:title="Cerrar Sesión" />
         </menu>
     </item>

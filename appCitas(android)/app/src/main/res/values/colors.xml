@@ -2,4 +2,11 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Tu nueva paleta de colores -->
+    <color name="blood_red">#8C1C13</color>
+    <color name="blushed_brick">#BF4342</color>
+    <color name="almond_cream">#E7D7C1</color>
+    <color name="dusty_taupe">#A78A7F</color>
+    <color name="mauve_bark">#735751</color>
 </resources>

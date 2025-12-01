@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -59,23 +60,29 @@ class EditarCita : AppCompatActivity() {
         binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
+        // --- ACTUALIZAR HEADER CON USERNAME ---
+        val headerView = binding.navView.getHeaderView(0)
+        val usernameTextView = headerView.findViewById<TextView>(R.id.tvNavHeaderUsername)
+        val username = cache.getString("username", "Usuario")
+        usernameTextView.text = "BIENVENIDO,\n$username!"
+
         binding.navView.setNavigationItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.menu_inicio -> startActivity(Intent(this, Pantalla1::class.java))
-                R.id.menu_crear_cita -> startActivity(Intent(this, CrearCita::class.java))
-                R.id.menu_lista_citas -> startActivity(Intent(this, MisCitas::class.java))
-                R.id.menu_logout -> {
-                    // --- LÓGICA DE LOGOUT CORREGIDA ---
-                    auth.signOut() // 1. Cerrar sesión en Firebase
-                    googleSignInClient.signOut() // 2. Cerrar sesión en Google
-
-                    cache.edit().clear().apply() // 3. Limpiar datos locales
-
-                    // 4. Volver al Login
-                    val intent = Intent(this, MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
+                R.id.menu_inicio -> {
+                    startActivity(Intent(this, Pantalla1::class.java))
                     finish()
+                }
+                R.id.menu_crear_cita -> {
+                    startActivity(Intent(this, CrearCita::class.java))
+                }
+                R.id.menu_lista_citas -> {
+                    startActivity(Intent(this, MisCitas::class.java))
+                }
+                R.id.menu_perfil -> {
+                    Toast.makeText(this, "Ir a Perfil (Pantalla por crear)", Toast.LENGTH_SHORT).show()
+                }
+                R.id.menu_cerrar_sesion -> {
+                    cerrarSesion()
                 }
             }
             binding.drawerLayout.closeDrawers()
@@ -103,6 +110,16 @@ class EditarCita : AppCompatActivity() {
             return true
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun cerrarSesion() {
+        auth.signOut()
+        googleSignInClient.signOut()
+        cache.edit().clear().apply()
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 
     private fun cargarDatosDeLaCita() {

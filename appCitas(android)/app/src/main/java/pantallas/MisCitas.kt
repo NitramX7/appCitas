@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -24,6 +25,7 @@ import com.example.appcitas.adapters.CitasAdapter
 import com.example.appcitas.model.Cita
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 class MisCitas : AppCompatActivity(), CitaActionListener {
@@ -49,7 +51,6 @@ class MisCitas : AppCompatActivity(), CitaActionListener {
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
         cache = getSharedPreferences("cache", MODE_PRIVATE)
 
-        // --- AÑADIENDO LA SOLUCIÓN AQUÍ ---
         ViewCompat.setOnApplyWindowInsetsListener(toolbar) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -80,6 +81,12 @@ class MisCitas : AppCompatActivity(), CitaActionListener {
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
+        // --- ACTUALIZAR HEADER CON USERNAME ---
+        val headerView = navView.getHeaderView(0)
+        val usernameTextView = headerView.findViewById<TextView>(R.id.tvNavHeaderUsername)
+        val username = cache.getString("username", "Usuario")
+        usernameTextView.text = "BIENVENIDO,\n$username!"
+
         navView.setNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.menu_inicio -> {
@@ -92,10 +99,26 @@ class MisCitas : AppCompatActivity(), CitaActionListener {
                     startActivity(Intent(this, CrearCita::class.java))
                 }
                 R.id.menu_lista_citas -> { /* Ya estamos aquí */ }
+                R.id.menu_perfil -> {
+                    // Lógica para ir a la pantalla de perfil (aún por crear)
+                    Toast.makeText(this, "Ir a Perfil (Pantalla por crear)", Toast.LENGTH_SHORT).show()
+                }
+                R.id.menu_cerrar_sesion -> {
+                    cerrarSesion()
+                }
             }
             drawerLayout.closeDrawers()
             true
         }
+    }
+
+    private fun cerrarSesion() {
+        FirebaseAuth.getInstance().signOut()
+        cache.edit().clear().apply()
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 
     private fun setupRecyclerView() {

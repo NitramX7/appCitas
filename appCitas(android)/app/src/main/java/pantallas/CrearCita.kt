@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -12,14 +13,10 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.RecyclerView
 import com.example.appcitas.R
 import com.example.appcitas.RetrofitClient
 import com.example.appcitas.databinding.ActivityCrearCitaBinding
 import com.example.appcitas.model.Cita
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
@@ -31,12 +28,9 @@ class CrearCita : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var navView: NavigationView
     private lateinit var toolbar: MaterialToolbar
-    private lateinit var rvMisCitas: RecyclerView
-    private lateinit var layoutSinCitas: View
     private lateinit var binding: ActivityCrearCitaBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var cache: SharedPreferences
-    private lateinit var googleSignInClient: GoogleSignInClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,12 +40,6 @@ class CrearCita : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         cache = getSharedPreferences("cache", MODE_PRIVATE)
 
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
-        googleSignInClient = GoogleSignIn.getClient(this, gso)
-
         val idUsuario = cache.getLong("id", 0L)
 
         if (auth.currentUser == null) {
@@ -59,78 +47,79 @@ class CrearCita : AppCompatActivity() {
             finish()
             return
         }
+
         drawerLayout = findViewById(R.id.drawerLayout)
         navView = findViewById(R.id.navView)
         toolbar = findViewById(R.id.toolbar)
-        rvMisCitas = findViewById(R.id.rvMisCitas)
-        layoutSinCitas = findViewById(R.id.layoutSinCitas)
 
-        // --- AÑADIENDO LA SOLUCIÓN AQUÍ ---
         ViewCompat.setOnApplyWindowInsetsListener(toolbar) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        setSupportActionBar(toolbar)
-
-        val toggle = ActionBarDrawerToggle(
-            this,
-            drawerLayout,
-            toolbar,
-            R.string.open_drawer,
-            R.string.close_drawer
-        )
-        drawerLayout.addDrawerListener(toggle)
-        toggle.syncState()
-
-        navView.setNavigationItemSelectedListener { item ->
-            when (item.itemId) {
-
-                R.id.menu_inicio -> {
-                    startActivity(Intent(this, Pantalla1::class.java))
-                }
-
-                R.id.menu_crear_cita -> {
-                    Toast.makeText(this, "Ya estás en la pantalla de Crear Cita", Toast.LENGTH_SHORT).show()
-                }
-
-                R.id.menu_lista_citas -> {
-                    startActivity(Intent(this, MisCitas::class.java))
-                }
-                
-                R.id.menu_logout -> {
-                    googleSignInClient.signOut().addOnCompleteListener {
-                        auth.signOut()
-                        cache.edit().clear().apply()
-                        val intent = Intent(this, MainActivity::class.java)
-                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        startActivity(intent)
-                        finish()
-                    }
-                }
-            }
-
-            drawerLayout.closeDrawers()
-            true
-        }
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+        setupToolbarAndDrawer()
 
         binding.btnCrearCitaGuardar.setOnClickListener {
             guardarCita(idUsuario)
         }
     }
 
-    private fun obtenerTemporada(): Int = when (binding.groupTemporada.checkedButtonId) { R.id.btnTemporadaBaja -> 1; R.id.btnTemporadaMedia -> 2; R.id.btnTemporadaAlta -> 3; else -> 2 }
-    private fun obtenerDinero(): Int = when (binding.groupDinero.checkedButtonId) { R.id.btnDineroBajo -> 1; R.id.btnDineroMedio -> 2; R.id.btnDineroAlto -> 3; else -> 2 }
-    private fun obtenerIntensidad(): Int = when (binding.groupIntensidad.checkedButtonId) { R.id.btnIntensidadBaja -> 1; R.id.btnIntensidadMedia -> 2; R.id.btnIntensidadAlta -> 3; else -> 2 }
-    private fun obtenerCercania(): Int = when (binding.groupCercania.checkedButtonId) { R.id.btnCercaniaBaja -> 3; R.id.btnCercaniaMedia -> 2; R.id.btnCercaniaAlta -> 1; else -> 2 }
-    private fun obtenerFacilidad(): Int = when (binding.groupFacilidad.checkedButtonId) { R.id.btnFacilidadBaja -> 3; R.id.btnFacilidadMedia -> 2; R.id.btnFacilidadAlta -> 1; else -> 2 }
+    private fun setupToolbarAndDrawer() {
+        setSupportActionBar(toolbar)
+        val toggle = ActionBarDrawerToggle(
+            this, drawerLayout, toolbar, R.string.open_drawer, R.string.close_drawer
+        )
+        drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        val headerView = navView.getHeaderView(0)
+        val usernameTextView = headerView.findViewById<TextView>(R.id.tvNavHeaderUsername)
+        val username = cache.getString("username", "Usuario")
+        usernameTextView.text = "BIENVENIDO,\n$username!"
+
+        navView.setNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.menu_inicio -> {
+                    startActivity(Intent(this, Pantalla1::class.java))
+                    finish()
+                }
+                R.id.menu_crear_cita -> { /* Ya estamos aquí */ }
+                R.id.menu_lista_citas -> {
+                    startActivity(Intent(this, MisCitas::class.java))
+                }
+                R.id.menu_perfil -> {
+                    Toast.makeText(this, "Ir a Perfil (Pantalla por crear)", Toast.LENGTH_SHORT).show()
+                }
+                R.id.menu_cerrar_sesion -> {
+                    cerrarSesion()
+                }
+            }
+            drawerLayout.closeDrawers()
+            true
+        }
+    }
+
+    private fun cerrarSesion() {
+        FirebaseAuth.getInstance().signOut()
+        cache.edit().clear().apply()
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
+    }
+
+    private fun obtenerTemporada(): Int = when (binding.groupTemporada.checkedButtonId) {
+        R.id.btnInvierno -> 1
+        R.id.btnVerano -> 2
+        R.id.btnOtono -> 3
+        R.id.btnPrimavera -> 4
+        else -> 2 // Valor por defecto
+    }
+
+    private fun obtenerValorSlider(sliderValue: Float): Int {
+        return sliderValue.toInt()
+    }
 
     private fun guardarCita(idUsuario: Long) {
         val titulo = binding.etTituloCita.text.toString().trim()
@@ -142,10 +131,10 @@ class CrearCita : AppCompatActivity() {
         }
 
         val temporada = obtenerTemporada()
-        val dinero = obtenerDinero()
-        val intensidad = obtenerIntensidad()
-        val cercania = obtenerCercania()
-        val facilidad = obtenerFacilidad()
+        val dinero = obtenerValorSlider(binding.sliderDinero.value)
+        val intensidad = obtenerValorSlider(binding.sliderIntensidad.value)
+        val cercania = obtenerValorSlider(binding.sliderCercania.value)
+        val facilidad = obtenerValorSlider(binding.sliderFacilidad.value)
 
         val nuevaCitaRequest = Cita(
             id = null,

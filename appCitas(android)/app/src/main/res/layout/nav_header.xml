@@ -1,39 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="160dp"
-    android:background="?attr/colorPrimary"
-    android:gravity="bottom"
+    android:layout_height="wrap_content"
+    android:background="?attr/colorSurface"
+    android:padding="16dp"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:gravity="start">
 
-    <ImageView
-        android:id="@+id/imgAvatar"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:src="@android:drawable/sym_def_app_icon"
-        android:background="@android:color/white"
-        android:padding="8dp"
-        android:scaleType="centerInside"
-        android:layout_marginBottom="8dp"
-        android:contentDescription="@string/app_name" />
-
-    <TextView
-        android:id="@+id/tvHeaderTitle"
+    <ImageButton
+        android:id="@+id/btn_hamburguesa"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="AppCitas"
-        android:textColor="@android:color/white"
-        android:textSize="20sp"
-        android:textStyle="bold" />
+        android:layout_marginTop="16dp" 
+        android:src="@android:drawable/ic_menu_sort_by_size"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Abrir menú" />
 
     <TextView
-        android:id="@+id/tvHeaderSubtitle"
+        android:id="@+id/tvNavHeaderUsername"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Tus planes guardados"
-        android:textColor="@android:color/white"
-        android:textSize="13sp"
-        android:alpha="0.9" />
+        android:layout_marginTop="16dp"
+        android:text="BIENVENIDO,\nUsuario!"
+        android:textAppearance="@style/TextAppearance.Material3.HeadlineLarge"
+        android:textColor="?attr/colorOnSurface" />
 
 </LinearLayout>
