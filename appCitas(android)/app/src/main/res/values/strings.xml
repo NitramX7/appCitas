@@ -3,5 +3,8 @@
     <string name="subtitulo_pant1"><![CDATA[¿Empezamos a buscar un planpara vuestra próxima cita?]]></string>
     <string name="open_drawer">Abrir menú</string>
     <string name="close_drawer">Cerrar menú</string>
+    <string name="facebook_app_id">1369558151877359</string>
+    <string name="fb_login_protocol_scheme">fb1369558151877359</string>
+    <string name="facebook_client_token">e6f85390a3496208e0bae1e3674564f0</string>
 
 </resources>

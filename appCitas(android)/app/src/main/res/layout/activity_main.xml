@@ -120,7 +120,7 @@
         android:layout_marginTop="16dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@+id/btnGoogle"
+        app:layout_constraintBottom_toTopOf="@+id/login_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnRegister">
@@ -145,6 +145,16 @@
             android:background="@android:color/darker_gray" />
     </LinearLayout>
 
+    <com.facebook.login.widget.LoginButton
+        android:id="@+id/login_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/btnGoogle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/divisor_layout" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnGoogle"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -155,6 +165,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/divisor_layout" />
+        app:layout_constraintTop_toBottomOf="@+id/login_button" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
