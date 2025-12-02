@@ -48,7 +48,8 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.compose.material)
-    implementation(libs.androidx.swiperefreshlayout) // Dependencia añadida aquí
+    implementation(libs.androidx.swiperefreshlayout)
+    implementation(libs.maps) // Dependencia añadida aquí
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -59,4 +60,5 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.android.gms:play-services-auth:21.2.0")
     implementation("com.facebook.android:facebook-login:16.0.1")
+    implementation("com.android.volley:volley:1.2.1")
 }
