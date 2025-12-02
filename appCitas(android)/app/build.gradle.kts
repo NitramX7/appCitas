@@ -49,7 +49,8 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.compose.material)
     implementation(libs.androidx.swiperefreshlayout)
-    implementation(libs.maps) // Dependencia añadida aquí
+    implementation(libs.maps)
+    implementation(libs.play.services.maps) // Dependencia añadida aquí
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

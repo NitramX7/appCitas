@@ -184,7 +184,7 @@ class Pantalla1 : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
                 startActivity(Intent(this, MisCitas::class.java))
             }
             R.id.menu_perfil -> {
-                Toast.makeText(this, "Ir a Perfil (Pantalla por crear)", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, MiPerfil::class.java))
             }
             R.id.menu_cerrar_sesion -> {
                 cerrarSesion()

@@ -18,6 +18,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCitas"
         android:usesCleartextTraffic="true">
+
+        <!-- Clave de la API de Google Maps -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCLkjmYlVQ4s-fEQXVbjTKDN3TiS93vmfE" />
+
         <activity
             android:name="pantallas.MiPerfil"
             android:exported="false" />

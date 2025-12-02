@@ -90,18 +90,15 @@ class MisCitas : AppCompatActivity(), CitaActionListener {
         navView.setNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.menu_inicio -> {
-                    if (this !is Pantalla1) {
-                        startActivity(Intent(this, Pantalla1::class.java))
-                        finish()
-                    }
+                    startActivity(Intent(this, Pantalla1::class.java))
+                    finish()
                 }
                 R.id.menu_crear_cita -> {
                     startActivity(Intent(this, CrearCita::class.java))
                 }
                 R.id.menu_lista_citas -> { /* Ya estamos aquí */ }
                 R.id.menu_perfil -> {
-                    // Lógica para ir a la pantalla de perfil (aún por crear)
-                    Toast.makeText(this, "Ir a Perfil (Pantalla por crear)", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(this, MiPerfil::class.java))
                 }
                 R.id.menu_cerrar_sesion -> {
                     cerrarSesion()
