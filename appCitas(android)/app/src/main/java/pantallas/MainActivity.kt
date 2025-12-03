@@ -368,7 +368,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navegarAPantallaPrincipal() {
-        val intent = Intent(this, Pantalla1::class.java)
+        val intent = Intent(this, MisCitas::class.java)
         startActivity(intent)
         finish()
     }
