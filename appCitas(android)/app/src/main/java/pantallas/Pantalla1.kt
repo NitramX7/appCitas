@@ -1,12 +1,16 @@
 package pantallas
 
 import CitaFiltroRequest
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
-import android.view.ViewGroup
 import android.widget.Button
 import android.widget.RadioButton
 import android.widget.RadioGroup
@@ -18,7 +22,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updateLayoutParams
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import com.example.appcitas.R
@@ -31,8 +34,10 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
+import kotlin.math.sqrt
 
-class Pantalla1 : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+// 1. Implementar la interfaz SensorEventListener
+class Pantalla1 : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, SensorEventListener {
     private lateinit var binding : ActivityPantalla1Binding
 
     private lateinit var drawerLayout: DrawerLayout
@@ -42,6 +47,14 @@ class Pantalla1 : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
     private lateinit var cache : SharedPreferences
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
+
+    // 2. Añadir propiedades para el detector de agitación
+    private lateinit var sensorManager: SensorManager
+    private var accelerometer: Sensor? = null
+    private var filtroSeleccionado: CitaFiltroRequest? = null // Para guardar el filtro
+    private var lastShakeTime: Long = 0
+    private val shakeThreshold = 12f // Umbral de aceleración para considerar una agitación
+    private val shakeCooldownMs = 1500L // Tiempo de espera (1.5 segundos) para evitar llamadas múltiples
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,13 +104,16 @@ class Pantalla1 : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
-        // --- ACTUALIZAR HEADER CON USERNAME ---
         val headerView = navView.getHeaderView(0)
         val usernameTextView = headerView.findViewById<TextView>(R.id.tvNavHeaderUsername)
         val username = cache.getString("username", "Usuario")
         usernameTextView.text = "BIENVENIDO,\n$username!"
 
         navView.setNavigationItemSelectedListener(this)
+
+        // 3. Inicializar el SensorManager y el acelerómetro
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
         val btnCita = findViewById<Button>(R.id.btnCita)
         val btnAtras = findViewById<Button>(R.id.btnAtras)
@@ -160,7 +176,8 @@ class Pantalla1 : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
                     else -> null
                 }
 
-                val filtro = CitaFiltroRequest(
+                // 4. Lógica cambiada: Guardar el filtro en lugar de llamar a la API
+                filtroSeleccionado = CitaFiltroRequest(
                     temporada = temporadaSeleccionada,
                     dinero = dineroSeleccionado,
                     intensidad = intensidadSeleccionada,
@@ -168,11 +185,62 @@ class Pantalla1 : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
                     facilidad = facilidadSeleccionada
                 )
 
-                aplicarFiltrosYCargarCitas(filtro)
+                // Ya no se llama a aplicarFiltrosYCargarCitas(filtro) aquí
+                Toast.makeText(this, "Filtros aplicados. ¡Agita el móvil para buscar una cita!", Toast.LENGTH_LONG).show()
+
                 dialog.dismiss()
             }
         }
     }
+
+    // 5. Registrar el listener en onResume
+    override fun onResume() {
+        super.onResume()
+        accelerometer?.also { accel ->
+            sensorManager.registerListener(this, accel, SensorManager.SENSOR_DELAY_UI)
+        }
+    }
+
+    // 6. Desregistrar el listener en onPause para ahorrar batería
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(this)
+    }
+
+    // 7. Implementar la lógica de detección de agitación
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
+            val currentTime = System.currentTimeMillis()
+            // Aplicar cooldown para no detectar múltiples agitaciones seguidas
+            if ((currentTime - lastShakeTime) > shakeCooldownMs) {
+                val x = event.values[0]
+                val y = event.values[1]
+                val z = event.values[2]
+
+                // Calcular la aceleración total y compararla con el umbral
+                val acceleration = sqrt(x * x + y * y + z * z)
+
+                if (acceleration > shakeThreshold) {
+                    lastShakeTime = currentTime
+
+                    // ¡ACCIÓN! Solo si hay un filtro guardado
+                    filtroSeleccionado?.let { filtro ->
+                        Log.d("SHAKE_DETECTED", "¡Agitación detectada! Buscando cita con filtro: $filtro")
+                        aplicarFiltrosYCargarCitas(filtro)
+
+                        // Opcional: Descomenta la línea de abajo si quieres que el filtro se reinicie después de cada búsqueda
+                        // filtroSeleccionado = null
+                        // Toast.makeText(this, "Filtro utilizado. Aplica uno nuevo para la próxima búsqueda.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        // No es necesario para este caso de uso
+    }
+
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
@@ -196,7 +264,7 @@ class Pantalla1 : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
 
     private fun cerrarSesion() {
         FirebaseAuth.getInstance().signOut()
-        googleSignInClient.signOut() // Añadido para el logout de Google
+        googleSignInClient.signOut()
         cache.edit().clear().apply()
         val intent = Intent(this, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -210,10 +278,11 @@ class Pantalla1 : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
                 val citas = RetrofitClient.citaApi.filtrarCitas(filtro)
                 Log.d("CITAS_FILTRADAS", "Resultado: $citas")
                 if (citas.isEmpty()) {
-                    Toast.makeText(this@Pantalla1, "No se han encontrado citas", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@Pantalla1, "No se han encontrado citas con esos filtros", Toast.LENGTH_SHORT).show()
                     return@launch
                 }
-                val cita = citas[0]
+                // Usar .random() para que sea más divertido si hay varias citas
+                val cita = citas.random()
                 val dialogView = layoutInflater.inflate(R.layout.dialog_cita_resultado, null)
                 val txtTitulo = dialogView.findViewById<TextView>(R.id.txtTituloDialog)
                 val txtDescripcion = dialogView.findViewById<TextView>(R.id.txtDescripcionDialog)
