@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.children
 import androidx.lifecycle.lifecycleScope
 import com.example.appcitas.R
 import com.example.appcitas.RetrofitClient
@@ -16,6 +17,7 @@ class CrearCita : AppCompatActivity() {
 
     private lateinit var binding: ActivityCrearCitaBinding
     private lateinit var cache: SharedPreferences
+    private var currentlyCheckedId: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,10 +29,26 @@ class CrearCita : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.title = "Crear Nueva Cita"
 
+        currentlyCheckedId = binding.groupTemporada.checkedButtonId
         setupBottomNavigation()
+        setupClearableToggleGroup()
 
         binding.btnCrearCitaGuardar.setOnClickListener {
             guardarCita()
+        }
+    }
+
+    private fun setupClearableToggleGroup() {
+        binding.groupTemporada.children.forEach { button ->
+            button.setOnClickListener {
+                if (currentlyCheckedId == button.id) {
+                    binding.groupTemporada.clearChecked()
+                    currentlyCheckedId = -1
+                } else {
+                    binding.groupTemporada.check(button.id)
+                    currentlyCheckedId = button.id
+                }
+            }
         }
     }
 

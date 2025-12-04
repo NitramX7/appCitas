@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
@@ -74,7 +75,8 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
 
     private fun setupToolbar() {
         setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = "CitaPlanner"
+        val username = cache.getString("username", null)
+        supportActionBar?.title = if (!username.isNullOrEmpty()) "Bienvenido, $username" else "CitaPlanner"
     }
 
     private fun setupRecyclerView() {
@@ -138,13 +140,48 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
         }
     }
 
+    private fun setupClearableRadioGroup(radioGroup: RadioGroup) {
+        val radioButtons = (0 until radioGroup.childCount).map { radioGroup.getChildAt(it) as RadioButton }
+        for (radioButton in radioButtons) {
+            radioButton.setOnClickListener {
+                if (radioButton.tag != null) {
+                    radioGroup.clearCheck()
+                    radioButton.tag = null
+                } else {
+                    radioButtons.forEach { it.tag = null }
+                    radioButton.tag = true
+                }
+            }
+        }
+    }
+
+
     private fun mostrarDialogoFiltros() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_filtros, null)
         val dialog = AlertDialog.Builder(this).setView(dialogView).create()
         dialog.show()
 
+        val groupCercania = dialog.findViewById<RadioGroup>(R.id.groupCercania)
+        val groupDinero = dialog.findViewById<RadioGroup>(R.id.groupDinero)
+        val groupFacilidad = dialog.findViewById<RadioGroup>(R.id.groupFacilidad)
+        val groupIntensidad = dialog.findViewById<RadioGroup>(R.id.groupIntensidad)
+        val groupTemporada = dialog.findViewById<RadioGroup>(R.id.groupTemporada)
+
+
+        groupCercania?.let { setupClearableRadioGroup(it) }
+        groupDinero?.let { setupClearableRadioGroup(it) }
+        groupFacilidad?.let { setupClearableRadioGroup(it) }
+        groupIntensidad?.let { setupClearableRadioGroup(it) }
+        groupTemporada?.let { setupClearableRadioGroup(it) }
+
+
+        // --- Funcionalidad para el nuevo botón de cerrar ---
+        dialog.findViewById<ImageButton>(R.id.btnCloseDialog)?.setOnClickListener {
+            dialog.dismiss()
+        }
+
         dialog.findViewById<Button>(R.id.btnAplicarFiltros)?.setOnClickListener {
-            val groupCercania = dialog.findViewById<RadioGroup>(R.id.groupCercania)
+
             val cercaniaSeleccionada = when (groupCercania?.checkedRadioButtonId) {
                 R.id.cercania_cerca -> 1
                 R.id.cercania_media -> 2
@@ -152,7 +189,7 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
                 else -> null
             }
 
-            val groupDinero = dialog.findViewById<RadioGroup>(R.id.groupDinero)
+
             val dineroSeleccionado = when (groupDinero?.checkedRadioButtonId) {
                 R.id.dinero_bajo -> 1
                 R.id.dinero_medio -> 2
@@ -160,7 +197,7 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
                 else -> null
             }
 
-            val groupFacilidad = dialog.findViewById<RadioGroup>(R.id.groupFacilidad)
+
             val facilidadSeleccionada = when (groupFacilidad?.checkedRadioButtonId) {
                 R.id.facil_facil -> 1
                 R.id.facil_normal -> 2
@@ -168,7 +205,6 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
                 else -> null
             }
 
-            val groupIntensidad = dialog.findViewById<RadioGroup>(R.id.groupIntensidad)
             val intensidadSeleccionada = when (groupIntensidad?.checkedRadioButtonId) {
                 R.id.int_tranqui -> 1
                 R.id.int_normal -> 2
@@ -176,10 +212,10 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
                 else -> null
             }
 
-            val temporadaSeleccionada = when {
-                dialog.findViewById<RadioButton>(R.id.temp_invierno)?.isChecked == true -> 1
-                dialog.findViewById<RadioButton>(R.id.temp_verano)?.isChecked == true -> 2
-                dialog.findViewById<RadioButton>(R.id.temp_otro)?.isChecked == true -> 3
+            val temporadaSeleccionada = when (groupTemporada?.checkedRadioButtonId) {
+                R.id.temp_invierno -> 1
+                R.id.temp_verano -> 2
+                R.id.temp_otro -> 3
                 else -> null
             }
 
@@ -206,6 +242,14 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
                 }
                 val cita = citas.random()
                 val dialogView = layoutInflater.inflate(R.layout.dialog_cita_resultado, null)
+                val dialog = AlertDialog.Builder(this@MisCitas).setView(dialogView).create()
+                dialog.show()
+
+                // --- Funcionalidad para el nuevo botón de cerrar ---
+                dialog.findViewById<ImageButton>(R.id.btnCloseDialog)?.setOnClickListener {
+                    dialog.dismiss()
+                }
+
                 val txtTitulo = dialogView.findViewById<TextView>(R.id.txtTituloDialog)
                 val txtDescripcion = dialogView.findViewById<TextView>(R.id.txtDescripcionDialog)
                 val txtDetalles = dialogView.findViewById<TextView>(R.id.txtDetallesDialog)
@@ -216,12 +260,13 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
                 val facilidadTxt = when (cita.facilidad) { 1 -> "Fácil"; 2 -> "Normal"; 3 -> "Difícil"; else -> "-" }
                 val intensidadTxt = when (cita.intensidad) { 1 -> "Tranqui"; 2 -> "Normal"; 3 -> "Intenso"; else -> "-" }
                 val temporadaTxt = when (cita.temporada) { 1 -> "Invierno"; 2 -> "Verano"; 3 -> "Otra"; else -> "Cualquiera" }
-                txtDetalles.text = "Cercanía: $cercaniaTxt\nDinero: $dineroTxt\nFacilidad: $facilidadTxt\nIntensidad: $intensidadTxt\nTemporada: $temporadaTxt"
-                AlertDialog.Builder(this@MisCitas)
-                    .setView(dialogView)
-                    .setCancelable(true)
-                    .setPositiveButton("Cerrar", null)
-                    .show()
+                txtDetalles.text = """
+                    Cercanía: $cercaniaTxt
+                    Dinero: $dineroTxt
+                    Facilidad: $facilidadTxt
+                    Intensidad: $intensidadTxt
+                    Temporada: $temporadaTxt"""
+
             } catch (e: Exception) {
                 Log.e("CITAS_FILTRADAS", "Error cargando citas", e)
                 Toast.makeText(this@MisCitas, "Error al cargar filtros", Toast.LENGTH_SHORT).show()

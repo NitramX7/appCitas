@@ -147,6 +147,17 @@
                 android:backgroundTint="#E6D3B3"
                 android:textColor="@android:color/black"/>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCerrarSesion"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Cerrar Sesión"
+                android:layout_marginTop="16dp"
+                app:cornerRadius="28dp"
+                android:textColor="?attr/colorError"
+                app:strokeColor="?attr/colorError" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

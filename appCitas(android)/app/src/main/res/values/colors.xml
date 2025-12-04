@@ -10,4 +10,8 @@
     <color name="almond_cream">#E7D7C1</color>
     <color name="dusty_taupe">#A78A7F</color>
     <color name="mauve_bark">#735751</color>
+
+    <!-- Nuevos colores -->
+    <color name="cream_white">#F5F5DC</color>
+    <color name="dark_chocolate">#3E2723</color>
 </resources>

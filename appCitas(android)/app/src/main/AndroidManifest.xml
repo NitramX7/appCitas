@@ -25,21 +25,29 @@
             android:value="AIzaSyCLkjmYlVQ4s-fEQXVbjTKDN3TiS93vmfE" />
 
         <activity
-            android:name="pantallas.MiPerfil"
-            android:exported="false" />
-        <!-- Actividades de la aplicación -->
-        <activity
             android:name="pantallas.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="pantallas.LoginActivity"
+            android:exported="false" />
+
+        <activity
+            android:name="pantallas.RegisterActivity"
+            android:exported="false" />
+
+        <activity
+            android:name="pantallas.MiPerfil"
+            android:exported="false" />
+
         <activity
             android:name="pantallas.Pantalla1"
-            android:exported="false" /> <!-- AÑADIDA LA DECLARACIÓN QUE FALTABA -->
+            android:exported="false" /> 
         <activity
             android:name="pantallas.CrearCita"
             android:exported="false" />
