@@ -77,6 +77,14 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
+    public Usuario updateFcmToken(Long id, String token) {
+        Usuario usuario = usuarioRepositorio.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        usuario.setFcmToken(token);
+        return usuarioRepositorio.save(usuario);
+    }
+
+    @Override
     public Usuario findOrCreateUsuario(String uid, String email, String nombre) {
         Optional<Usuario> usuarioOpt = usuarioRepositorio.findByEmail(email);
         if (usuarioOpt.isPresent()) {

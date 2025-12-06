@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("com.google.gms.google-services")
+
 }
 
 android {
@@ -50,7 +51,7 @@ dependencies {
     implementation(libs.androidx.compose.material)
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.maps)
-    implementation(libs.play.services.maps) // Dependencia añadida aquí
+    implementation(libs.play.services.maps)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -62,4 +63,6 @@ dependencies {
     implementation("com.google.android.gms:play-services-auth:21.2.0")
     implementation("com.facebook.android:facebook-login:16.0.1")
     implementation("com.android.volley:volley:1.2.1")
+    implementation("com.google.firebase:firebase-messaging-ktx:24.0.0")
+
 }

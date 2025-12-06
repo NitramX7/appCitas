@@ -1,13 +1,18 @@
 package pantallas
 
 import CitaFiltroRequest
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -27,11 +32,15 @@ import com.example.appcitas.adapters.CitaActionListener
 import com.example.appcitas.adapters.CitasAdapter
 import com.example.appcitas.databinding.ActivityMisCitasBinding
 import com.example.appcitas.model.Cita
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
 import kotlin.math.sqrt
 
 class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
 
+    companion object {
+        const val CHANNEL_ID = "citas_channel"
+    }
     private lateinit var binding: ActivityMisCitasBinding
     private lateinit var citasAdapter: CitasAdapter
     private lateinit var cache: SharedPreferences
@@ -55,6 +64,15 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
         setupRecyclerView()
         setupBottomNavigation()
         setupSensor()
+
+        crearCanalNotificaciones()
+        pedirPermisoNotificaciones()
+
+        FirebaseMessaging.getInstance().token
+            .addOnSuccessListener { token ->
+                Log.d("FCM_TOKEN", "Token: $token")
+            }
+
 
         binding.fabBuscarCita.setOnClickListener {
             mostrarDialogoFiltros()
@@ -347,4 +365,28 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
             }
         }
     }
+    private fun pedirPermisoNotificaciones() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1001)
+            }
+        }
+    }
+
+    private fun crearCanalNotificaciones() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val nombre = "Notificaciones de citas"
+            val descripcion = "Avisos relacionados con tus citas"
+            val importancia = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel(CHANNEL_ID, nombre, importancia).apply {
+                description = descripcion
+            }
+
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
 }

@@ -88,9 +88,9 @@ class CitasAdapter(
         }
 
         // --- Funciones de mapeo (sin cambios) ---
-        private fun mapDinero(valor: Int?): String = when (valor) { 1 -> "Bajo"; 2 -> "Medio"; 3 -> "Alto"; else -> "N/A" }
-        private fun mapIntensidad(valor: Int?): String = when (valor) { 1 -> "Tranqui"; 2 -> "Normal"; 3 -> "Intenso"; else -> "N/A" }
-        private fun mapCercania(valor: Int?): String = when (valor) { 1 -> "Cerca"; 2 -> "Normal"; 3 -> "Lejos"; else -> "N/A" }
-        private fun mapTemporada(valor: Int?): String = when (valor) { 1 -> "Baja"; 2 -> "Media"; 3 -> "Alta"; else -> "N/A" }
+        private fun mapDinero(valor: Int?): String = when (valor) { 1 -> "Gratis"; 2 -> "Poco"; 3 -> "Mucho"; else -> "N/A" }
+        private fun mapIntensidad(valor: Int?): String = when (valor) { 1 -> "Int-> Tranqui"; 2 -> "Int-> Normal"; 3 -> "Int-> Intenso"; else -> "N/A" }
+        private fun mapCercania(valor: Int?): String = when (valor) { 1 -> "Lej -> Cerca"; 2 -> "Lej -> Normal"; 3 -> "Lejanía -> Lejos"; else -> "N/A" }
+        private fun mapTemporada(valor: Int?): String = when (valor) { 1 -> "Invierno"; 2 -> "Verano"; 3 -> "Otro"; else -> "N/A" }
     }
 }

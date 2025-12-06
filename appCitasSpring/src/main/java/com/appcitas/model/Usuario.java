@@ -40,6 +40,9 @@ public class Usuario implements Serializable {
     @Column
     String nombre;
 
+    @Column(name = "fcm_token", length = 400)
+    String fcmToken;
+
     @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro = LocalDateTime.now();
 
@@ -86,6 +89,14 @@ public class Usuario implements Serializable {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 
     public LocalDateTime getFechaRegistro() {

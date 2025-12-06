@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.appcitas.dto.FcmTokenRequest;
 import com.appcitas.dto.LoginRequest;
 import com.appcitas.model.Usuario;
 import com.appcitas.service.UsuarioService;
@@ -87,5 +88,20 @@ public class UsuarioController {
     public ResponseEntity<Usuario> getUsuarioByEmail(@RequestParam String email) {
         Usuario usuario = usuarioService.findByEmail(email);
         return ResponseEntity.ok(usuario);
+    }
+
+    @PostMapping("/usuarios/{id}/fcm-token")
+    public ResponseEntity<?> actualizarFcmToken(
+            @PathVariable Long id,
+            @RequestBody FcmTokenRequest request) {
+        try {
+            Usuario actualizado = usuarioService.updateFcmToken(id, request.getToken());
+            return ResponseEntity.ok(actualizado);
+        } catch (RuntimeException ex) {
+            if ("Usuario no encontrado".equals(ex.getMessage())) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar token");
+        }
     }
 }

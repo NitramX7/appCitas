@@ -8,6 +8,6 @@ import com.appcitas.model.Usuario;
 public interface UsuarioRepo extends JpaRepository<Usuario, Long> {
 
     boolean existsByEmail(String email);
-    
+
     Optional<Usuario> findByEmail(String email);
 }

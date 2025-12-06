@@ -59,6 +59,9 @@ public class Cita implements Serializable {
     @Column(name = "fecha_creacion")
     LocalDateTime fechaCreacion;
 
+    @Column(name = "tokenfirebase", length = 400)
+    String tokenFirebase;
+
     // --------------------------
     // RELACIÓN CON USUARIO (creador_id)
     // --------------------------
@@ -155,6 +158,14 @@ public class Cita implements Serializable {
 
     public void setCreadorId(Long creadorId) {
         this.creadorId = creadorId;
+    }
+
+    public String getTokenFirebase() {
+        return tokenFirebase;
+    }
+
+    public void setTokenFirebase(String tokenFirebase) {
+        this.tokenFirebase = tokenFirebase;
     }
 
     public static long getSerialversionuid() {

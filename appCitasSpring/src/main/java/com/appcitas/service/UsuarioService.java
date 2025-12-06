@@ -23,4 +23,6 @@ public interface UsuarioService {
 
     public Usuario findOrCreateUsuario(String uid, String email, String nombre);
 
+    public Usuario updateFcmToken(Long id, String token);
+
 }
