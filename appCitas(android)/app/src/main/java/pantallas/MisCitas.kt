@@ -13,8 +13,6 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
-import android.widget.RadioButton
-import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -27,6 +25,8 @@ import com.example.appcitas.adapters.CitaActionListener
 import com.example.appcitas.adapters.CitasAdapter
 import com.example.appcitas.databinding.ActivityMisCitasBinding
 import com.example.appcitas.model.Cita
+import com.google.android.material.button.MaterialButtonToggleGroup
+import com.google.android.material.slider.Slider
 import kotlinx.coroutines.launch
 import kotlin.math.sqrt
 
@@ -44,6 +44,11 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
     private val shakeThreshold = 12f
     private val shakeCooldownMs = 1500L
 
+    // --- Asistente de Filtros ---
+    private var dialogPaso: AlertDialog? = null
+    private var pasoActual = 0
+    private var filtroBuilder = CitaFiltroRequest()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMisCitasBinding.inflate(layoutInflater)
@@ -57,7 +62,7 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
         setupSensor()
 
         binding.fabBuscarCita.setOnClickListener {
-            mostrarDialogoFiltros()
+            iniciarAsistenteDeFiltros()
         }
 
         binding.swipeRefreshLayout.setOnRefreshListener {
@@ -86,14 +91,11 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
     }
 
     private fun setupBottomNavigation() {
-        binding.bottomNavigation.selectedItemId = R.id.nav_mis_citas // Marca "Inicio" como seleccionado
+        binding.bottomNavigation.selectedItemId = R.id.nav_mis_citas
 
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_mis_citas -> {
-                    // Ya estamos aquí, no hacer nada
-                    true
-                }
+                R.id.nav_mis_citas -> true
                 R.id.nav_crear_cita -> {
                     startActivity(Intent(this, CrearCita::class.java))
                     overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
@@ -140,95 +142,125 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
         }
     }
 
-    private fun setupClearableRadioGroup(radioGroup: RadioGroup) {
-        val radioButtons = (0 until radioGroup.childCount).map { radioGroup.getChildAt(it) as RadioButton }
-        for (radioButton in radioButtons) {
-            radioButton.setOnClickListener {
-                if (radioButton.tag != null) {
-                    radioGroup.clearCheck()
-                    radioButton.tag = null
-                } else {
-                    radioButtons.forEach { it.tag = null }
-                    radioButton.tag = true
-                }
-            }
-        }
+    // --- Lógica del Asistente de Filtros ---
+
+    private fun iniciarAsistenteDeFiltros() {
+        pasoActual = 0
+        filtroBuilder = CitaFiltroRequest()
+
+        val dialogView = layoutInflater.inflate(R.layout.dialog_filtro_paso, null)
+        dialogPaso = AlertDialog.Builder(this).setView(dialogView).create()
+        dialogPaso?.setCancelable(false)
+        dialogPaso?.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        mostrarPasoDelFiltro(dialogView, 0)
+
+        dialogPaso?.show()
     }
 
+    private fun mostrarPasoDelFiltro(view: View, paso: Int) {
+        val titulo = view.findViewById<TextView>(R.id.tvFiltroTitulo)
+        val container = view.findViewById<android.widget.FrameLayout>(R.id.filtro_content_container)
+        val btnAtras = view.findViewById<Button>(R.id.btnAtras)
+        val btnSiguiente = view.findViewById<Button>(R.id.btnSiguiente)
 
-    private fun mostrarDialogoFiltros() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_filtros, null)
-        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
-        dialog.show()
+        container.removeAllViews()
 
-        val groupCercania = dialog.findViewById<RadioGroup>(R.id.groupCercania)
-        val groupDinero = dialog.findViewById<RadioGroup>(R.id.groupDinero)
-        val groupFacilidad = dialog.findViewById<RadioGroup>(R.id.groupFacilidad)
-        val groupIntensidad = dialog.findViewById<RadioGroup>(R.id.groupIntensidad)
-        val groupTemporada = dialog.findViewById<RadioGroup>(R.id.groupTemporada)
+        when (paso) {
+            0 -> {
+                titulo.text = "¿En qué temporada quieres tu cita?"
+                val temporadaView = layoutInflater.inflate(R.layout.filtro_temporada, container, false)
+                container.addView(temporadaView)
+                btnAtras.visibility = View.INVISIBLE
 
-
-        groupCercania?.let { setupClearableRadioGroup(it) }
-        groupDinero?.let { setupClearableRadioGroup(it) }
-        groupFacilidad?.let { setupClearableRadioGroup(it) }
-        groupIntensidad?.let { setupClearableRadioGroup(it) }
-        groupTemporada?.let { setupClearableRadioGroup(it) }
-
-
-        // --- Funcionalidad para el nuevo botón de cerrar ---
-        dialog.findViewById<ImageButton>(R.id.btnCloseDialog)?.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        dialog.findViewById<Button>(R.id.btnAplicarFiltros)?.setOnClickListener {
-
-            val cercaniaSeleccionada = when (groupCercania?.checkedRadioButtonId) {
-                R.id.cercania_cerca -> 1
-                R.id.cercania_media -> 2
-                R.id.cercania_lejos -> 3
-                else -> null
+                btnSiguiente.setOnClickListener {
+                    val group = temporadaView.findViewById<MaterialButtonToggleGroup>(R.id.groupTemporada)
+                    val temporadaValue = when (group.checkedButtonId) {
+                        R.id.btnInvierno -> 1
+                        R.id.btnVerano -> 2
+                        R.id.btnOtono -> 3
+                        R.id.btnPrimavera -> 4
+                        else -> null
+                    }
+                    filtroBuilder = filtroBuilder.copy(temporada = temporadaValue)
+                    pasoActual++
+                    mostrarPasoDelFiltro(view, pasoActual)
+                }
             }
+            1 -> {
+                titulo.text = "¿Cuánto te quieres gastar?"
+                val sliderView = layoutInflater.inflate(R.layout.filtro_slider, container, false)
+                container.addView(sliderView)
+                btnAtras.visibility = View.VISIBLE
 
+                btnAtras.setOnClickListener {
+                    pasoActual--
+                    mostrarPasoDelFiltro(view, pasoActual)
+                }
 
-            val dineroSeleccionado = when (groupDinero?.checkedRadioButtonId) {
-                R.id.dinero_bajo -> 1
-                R.id.dinero_medio -> 2
-                R.id.dinero_alto -> 3
-                else -> null
+                btnSiguiente.setOnClickListener {
+                    val slider = sliderView.findViewById<Slider>(R.id.slider)
+                    filtroBuilder = filtroBuilder.copy(dinero = slider.value.toInt())
+                    pasoActual++
+                    mostrarPasoDelFiltro(view, pasoActual)
+                }
             }
+            2 -> {
+                titulo.text = "¿Qué nivel de intensidad buscas?"
+                val sliderView = layoutInflater.inflate(R.layout.filtro_slider, container, false)
+                container.addView(sliderView)
+                btnAtras.visibility = View.VISIBLE
 
+                btnAtras.setOnClickListener {
+                    pasoActual--
+                    mostrarPasoDelFiltro(view, pasoActual)
+                }
 
-            val facilidadSeleccionada = when (groupFacilidad?.checkedRadioButtonId) {
-                R.id.facil_facil -> 1
-                R.id.facil_normal -> 2
-                R.id.facil_dificil -> 3
-                else -> null
+                btnSiguiente.setOnClickListener {
+                    val slider = sliderView.findViewById<Slider>(R.id.slider)
+                    filtroBuilder = filtroBuilder.copy(intensidad = slider.value.toInt())
+                    pasoActual++
+                    mostrarPasoDelFiltro(view, pasoActual)
+                }
             }
+            3 -> {
+                titulo.text = "¿Qué tan lejos quieres ir?"
+                val sliderView = layoutInflater.inflate(R.layout.filtro_slider, container, false)
+                container.addView(sliderView)
+                btnAtras.visibility = View.VISIBLE
 
-            val intensidadSeleccionada = when (groupIntensidad?.checkedRadioButtonId) {
-                R.id.int_tranqui -> 1
-                R.id.int_normal -> 2
-                R.id.int_intenso -> 3
-                else -> null
+                btnAtras.setOnClickListener {
+                    pasoActual--
+                    mostrarPasoDelFiltro(view, pasoActual)
+                }
+
+                btnSiguiente.setOnClickListener {
+                    val slider = sliderView.findViewById<Slider>(R.id.slider)
+                    filtroBuilder = filtroBuilder.copy(cercania = slider.value.toInt())
+                    pasoActual++
+                    mostrarPasoDelFiltro(view, pasoActual)
+                }
             }
+            4 -> {
+                titulo.text = "¿Cómo de fácil de organizar debe ser?"
+                val sliderView = layoutInflater.inflate(R.layout.filtro_slider, container, false)
+                container.addView(sliderView)
+                btnAtras.visibility = View.VISIBLE
+                btnSiguiente.text = "Finalizar"
 
-            val temporadaSeleccionada = when (groupTemporada?.checkedRadioButtonId) {
-                R.id.temp_invierno -> 1
-                R.id.temp_verano -> 2
-                R.id.temp_otro -> 3
-                else -> null
+                btnAtras.setOnClickListener {
+                    pasoActual--
+                    mostrarPasoDelFiltro(view, pasoActual)
+                }
+
+                btnSiguiente.setOnClickListener {
+                    val slider = sliderView.findViewById<Slider>(R.id.slider)
+                    filtroBuilder = filtroBuilder.copy(facilidad = slider.value.toInt())
+                    filtroSeleccionado = filtroBuilder.copy()
+                    dialogPaso?.dismiss()
+                    Toast.makeText(this, "Filtros aplicados. ¡Agita el móvil para buscar una cita!", Toast.LENGTH_LONG).show()
+                }
             }
-
-            filtroSeleccionado = CitaFiltroRequest(
-                temporada = temporadaSeleccionada,
-                dinero = dineroSeleccionado,
-                intensidad = intensidadSeleccionada,
-                cercania = cercaniaSeleccionada,
-                facilidad = facilidadSeleccionada
-            )
-
-            Toast.makeText(this, "Filtros aplicados. ¡Agita el móvil para buscar una cita!", Toast.LENGTH_LONG).show()
-            dialog.dismiss()
         }
     }
 
@@ -245,7 +277,6 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
                 val dialog = AlertDialog.Builder(this@MisCitas).setView(dialogView).create()
                 dialog.show()
 
-                // --- Funcionalidad para el nuevo botón de cerrar ---
                 dialog.findViewById<ImageButton>(R.id.btnCloseDialog)?.setOnClickListener {
                     dialog.dismiss()
                 }
@@ -276,7 +307,6 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
 
     override fun onResume() {
         super.onResume()
-        // Vuelve a seleccionar el item de "Inicio" para evitar que se quede marcado el de otra pantalla
         binding.bottomNavigation.selectedItemId = R.id.nav_mis_citas
         accelerometer?.also { accel ->
             sensorManager.registerListener(this, accel, SensorManager.SENSOR_DELAY_UI)
