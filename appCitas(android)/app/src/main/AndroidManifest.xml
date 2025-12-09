@@ -60,6 +60,9 @@
         <activity
             android:name="pantallas.EditarCita"
             android:exported="false" />
+        <activity
+            android:name="pantallas.ParejaActivity"
+            android:exported="false" />
 
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"

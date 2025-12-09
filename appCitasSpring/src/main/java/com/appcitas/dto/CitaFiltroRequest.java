@@ -9,6 +9,7 @@ public class CitaFiltroRequest {
     private Integer facilidad;
     private Long creadorId;
     private Long id;
+    private Long coupleId;
 
     public Integer getTemporada() {
         return temporada;
@@ -64,5 +65,13 @@ public class CitaFiltroRequest {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getCoupleId() {
+        return coupleId;
+    }
+
+    public void setCoupleId(Long coupleId) {
+        this.coupleId = coupleId;
     }
 }

@@ -9,6 +9,10 @@
         android:icon="@drawable/ic_add_circle"
         android:title="Crear" />
     <item
+        android:id="@+id/nav_pareja"
+        android:icon="@drawable/ic_people" 
+        android:title="Pareja" />
+    <item
         android:id="@+id/nav_perfil"
         android:icon="@drawable/ic_profile_placeholder"
         android:title="Perfil" />

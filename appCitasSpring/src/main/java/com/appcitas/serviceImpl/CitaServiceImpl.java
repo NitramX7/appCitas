@@ -65,6 +65,7 @@ public class CitaServiceImpl implements CitaService {
                 filtros.getCercania(),
                 filtros.getFacilidad(),
                 filtros.getCreadorId(),
+                filtros.getCoupleId(),
                 filtros.getId());
     }
 

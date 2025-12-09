@@ -14,6 +14,10 @@ import pantallas.MisCitas
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
+    companion object {
+        const val CHANNEL_ID = "citas_channel"
+    }
+
     override fun onMessageReceived(message: RemoteMessage) {
         val title = message.data["title"] ?: "Nueva notificación"
         val body = message.data["body"] ?: "Tienes una nueva cita"
@@ -39,7 +43,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val builder = NotificationCompat.Builder(this, MisCitas.CHANNEL_ID)
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(title)
             .setContentText(body)
@@ -56,7 +60,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val name = "Notificaciones de citas"
             val descriptionText = "Avisos relacionados con tus citas"
             val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(MisCitas.CHANNEL_ID, name, importance).apply {
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
             }
 

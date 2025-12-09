@@ -1,13 +1,11 @@
 package pantallas
 
 import CitaFiltroRequest
-import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -32,26 +30,25 @@ import com.example.appcitas.adapters.CitaActionListener
 import com.example.appcitas.adapters.CitasAdapter
 import com.example.appcitas.databinding.ActivityMisCitasBinding
 import com.example.appcitas.model.Cita
-import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
 import kotlin.math.sqrt
 
 class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
 
-    companion object {
-        const val CHANNEL_ID = "citas_channel"
-    }
     private lateinit var binding: ActivityMisCitasBinding
     private lateinit var citasAdapter: CitasAdapter
     private lateinit var cache: SharedPreferences
 
-    // --- Propiedades para la Búsqueda por Agitación ---
     private lateinit var sensorManager: SensorManager
     private var accelerometer: Sensor? = null
     private var filtroSeleccionado: CitaFiltroRequest? = null
     private var lastShakeTime: Long = 0
     private val shakeThreshold = 12f
     private val shakeCooldownMs = 1500L
+
+    companion object {
+        const val CHANNEL_ID = "citas_channel"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,19 +57,11 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
 
         cache = getSharedPreferences("cache", MODE_PRIVATE)
 
+        createNotificationChannel()
         setupToolbar()
         setupRecyclerView()
         setupBottomNavigation()
         setupSensor()
-
-        crearCanalNotificaciones()
-        pedirPermisoNotificaciones()
-
-        FirebaseMessaging.getInstance().token
-            .addOnSuccessListener { token ->
-                Log.d("FCM_TOKEN", "Token: $token")
-            }
-
 
         binding.fabBuscarCita.setOnClickListener {
             mostrarDialogoFiltros()
@@ -88,6 +77,20 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
         val idUsuario = cache.getLong("id", 0L)
         if (idUsuario != 0L) {
             cargarCitasUsuario(idUsuario)
+        }
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "Notificaciones de Citas"
+            val descriptionText = "Canal para notificaciones de la app de citas"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+                description = descriptionText
+            }
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
         }
     }
 
@@ -117,6 +120,11 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
                     overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                     true
                 }
+                R.id.nav_pareja -> {
+                    startActivity(Intent(this, ParejaActivity::class.java))
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    true
+                }
                 R.id.nav_perfil -> {
                     startActivity(Intent(this, MiPerfil::class.java))
                     overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
@@ -137,19 +145,26 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
         lifecycleScope.launch {
             try {
                 val filtro = CitaFiltroRequest(creadorId = idUsuario)
-                val citas = RetrofitClient.citaApi.filtrarCitas(filtro)
+                val response = RetrofitClient.citaApi.filtrarCitas(filtro)
 
-                if (citas.isNotEmpty()) {
-                    citasAdapter.updateData(citas)
-                    binding.rvMisCitas.visibility = View.VISIBLE
-                    binding.layoutSinCitas.visibility = View.GONE
+                if (response.isSuccessful) {
+                    val citas = response.body()
+                    if (!citas.isNullOrEmpty()) {
+                        citasAdapter.updateData(citas)
+                        binding.rvMisCitas.visibility = View.VISIBLE
+                        binding.layoutSinCitas.visibility = View.GONE
+                    } else {
+                        binding.rvMisCitas.visibility = View.GONE
+                        binding.layoutSinCitas.visibility = View.VISIBLE
+                    }
                 } else {
+                    Toast.makeText(this@MisCitas, "Error al obtener tus citas: ${response.message()}", Toast.LENGTH_LONG).show()
                     binding.rvMisCitas.visibility = View.GONE
                     binding.layoutSinCitas.visibility = View.VISIBLE
                 }
             } catch (e: Exception) {
-                Log.e("CARGAR_CITAS_ERROR", "Error al cargar las citas", e)
-                Toast.makeText(this@MisCitas, "Error al obtener tus citas", Toast.LENGTH_LONG).show()
+                Log.e("CARGAR_CITAS_ERROR", "Error de conexión al cargar las citas", e)
+                Toast.makeText(this@MisCitas, "Error de conexión", Toast.LENGTH_LONG).show()
                 binding.rvMisCitas.visibility = View.GONE
                 binding.layoutSinCitas.visibility = View.VISIBLE
             } finally {
@@ -173,7 +188,6 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
         }
     }
 
-
     private fun mostrarDialogoFiltros() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_filtros, null)
         val dialog = AlertDialog.Builder(this).setView(dialogView).create()
@@ -185,21 +199,17 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
         val groupIntensidad = dialog.findViewById<RadioGroup>(R.id.groupIntensidad)
         val groupTemporada = dialog.findViewById<RadioGroup>(R.id.groupTemporada)
 
-
         groupCercania?.let { setupClearableRadioGroup(it) }
         groupDinero?.let { setupClearableRadioGroup(it) }
         groupFacilidad?.let { setupClearableRadioGroup(it) }
         groupIntensidad?.let { setupClearableRadioGroup(it) }
         groupTemporada?.let { setupClearableRadioGroup(it) }
 
-
-        // --- Funcionalidad para el nuevo botón de cerrar ---
         dialog.findViewById<ImageButton>(R.id.btnCloseDialog)?.setOnClickListener {
             dialog.dismiss()
         }
 
         dialog.findViewById<Button>(R.id.btnAplicarFiltros)?.setOnClickListener {
-
             val cercaniaSeleccionada = when (groupCercania?.checkedRadioButtonId) {
                 R.id.cercania_cerca -> 1
                 R.id.cercania_media -> 2
@@ -207,14 +217,12 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
                 else -> null
             }
 
-
             val dineroSeleccionado = when (groupDinero?.checkedRadioButtonId) {
                 R.id.dinero_bajo -> 1
                 R.id.dinero_medio -> 2
                 R.id.dinero_alto -> 3
                 else -> null
             }
-
 
             val facilidadSeleccionada = when (groupFacilidad?.checkedRadioButtonId) {
                 R.id.facil_facil -> 1
@@ -253,48 +261,27 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
     private fun aplicarFiltrosYCargarCitas(filtro: CitaFiltroRequest) {
         lifecycleScope.launch {
             try {
-                val citas = RetrofitClient.citaApi.filtrarCitas(filtro)
-                if (citas.isEmpty()) {
-                    Toast.makeText(this@MisCitas, "No se han encontrado citas con esos filtros", Toast.LENGTH_SHORT).show()
-                    return@launch
+                val response = RetrofitClient.citaApi.filtrarCitas(filtro)
+                if (response.isSuccessful) {
+                    val citas = response.body()
+                    if (!citas.isNullOrEmpty()) {
+                        val cita = citas.random()
+                        mostrarDialogoDetallesCita(cita)
+                    } else {
+                        Toast.makeText(this@MisCitas, "No se han encontrado citas con esos filtros", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(this@MisCitas, "Error al aplicar los filtros: ${response.message()}", Toast.LENGTH_SHORT).show()
                 }
-                val cita = citas.random()
-                val dialogView = layoutInflater.inflate(R.layout.dialog_cita_resultado, null)
-                val dialog = AlertDialog.Builder(this@MisCitas).setView(dialogView).create()
-                dialog.show()
-
-                // --- Funcionalidad para el nuevo botón de cerrar ---
-                dialog.findViewById<ImageButton>(R.id.btnCloseDialog)?.setOnClickListener {
-                    dialog.dismiss()
-                }
-
-                val txtTitulo = dialogView.findViewById<TextView>(R.id.txtTituloDialog)
-                val txtDescripcion = dialogView.findViewById<TextView>(R.id.txtDescripcionDialog)
-                val txtDetalles = dialogView.findViewById<TextView>(R.id.txtDetallesDialog)
-                txtTitulo.text = cita.titulo
-                txtDescripcion.text = cita.descripcion
-                val cercaniaTxt = when (cita.cercania) { 1 -> "Cerca"; 2 -> "Media"; 3 -> "Lejos"; else -> "-" }
-                val dineroTxt = when (cita.dinero) { 1 -> "Bajo"; 2 -> "Medio"; 3 -> "Alto"; else -> "-" }
-                val facilidadTxt = when (cita.facilidad) { 1 -> "Fácil"; 2 -> "Normal"; 3 -> "Difícil"; else -> "-" }
-                val intensidadTxt = when (cita.intensidad) { 1 -> "Tranqui"; 2 -> "Normal"; 3 -> "Intenso"; else -> "-" }
-                val temporadaTxt = when (cita.temporada) { 1 -> "Invierno"; 2 -> "Verano"; 3 -> "Otra"; else -> "Cualquiera" }
-                txtDetalles.text = """
-                    Cercanía: $cercaniaTxt
-                    Dinero: $dineroTxt
-                    Facilidad: $facilidadTxt
-                    Intensidad: $intensidadTxt
-                    Temporada: $temporadaTxt"""
-
             } catch (e: Exception) {
-                Log.e("CITAS_FILTRADAS", "Error cargando citas", e)
-                Toast.makeText(this@MisCitas, "Error al cargar filtros", Toast.LENGTH_SHORT).show()
+                Log.e("CITAS_FILTRADAS", "Error de conexión al cargar citas", e)
+                Toast.makeText(this@MisCitas, "Error de conexión", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        // Vuelve a seleccionar el item de "Inicio" para evitar que se quede marcado el de otra pantalla
         binding.bottomNavigation.selectedItemId = R.id.nav_mis_citas
         accelerometer?.also { accel ->
             sensorManager.registerListener(this, accel, SensorManager.SENSOR_DELAY_UI)
@@ -329,7 +316,9 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) { /* No es necesario */ }
 
-    // --- Métodos del CitaActionListener ---
+    fun onCitaClick(cita: Cita) {
+        mostrarDialogoDetallesCita(cita)
+    }
 
     override fun onEditarCita(cita: Cita) {
         val intent = Intent(this, EditarCita::class.java).apply {
@@ -350,43 +339,58 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
     }
 
     private fun eliminarCitaEnServidor(cita: Cita, position: Int) {
+        val citaId = cita.id ?: run {
+            Toast.makeText(this, "Error: la cita no tiene un ID válido", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         lifecycleScope.launch {
             try {
-                RetrofitClient.citaApi.eliminarCita(id = cita.id!!)
-                Toast.makeText(this@MisCitas, "Cita eliminada", Toast.LENGTH_SHORT).show()
-                citasAdapter.removeItem(position)
-                if (citasAdapter.itemCount == 0) {
-                    binding.rvMisCitas.visibility = View.GONE
-                    binding.layoutSinCitas.visibility = View.VISIBLE
+                val response = RetrofitClient.citaApi.eliminarCita(citaId)
+                if (response.isSuccessful) {
+                    Toast.makeText(this@MisCitas, "Cita eliminada", Toast.LENGTH_SHORT).show()
+                    citasAdapter.removeItem(position)
+                    if (citasAdapter.itemCount == 0) {
+                        binding.rvMisCitas.visibility = View.GONE
+                        binding.layoutSinCitas.visibility = View.VISIBLE
+                    }
+                } else {
+                    Toast.makeText(this@MisCitas, "Error al eliminar la cita: ${response.message()}", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Log.e("ELIMINAR_CITA_ERROR", "Error al eliminar la cita", e)
-                Toast.makeText(this@MisCitas, "Error al eliminar: ${e.message}", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
-    private fun pedirPermisoNotificaciones() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED
-            ) {
-                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1001)
+                Log.e("ELIMINAR_CITA", "Error de conexión al eliminar la cita", e)
+                Toast.makeText(this@MisCitas, "Error de conexión", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun crearCanalNotificaciones() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val nombre = "Notificaciones de citas"
-            val descripcion = "Avisos relacionados con tus citas"
-            val importancia = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(CHANNEL_ID, nombre, importancia).apply {
-                description = descripcion
-            }
+    private fun mostrarDialogoDetallesCita(cita: Cita) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_cita_resultado, null)
+        val dialog = AlertDialog.Builder(this@MisCitas).setView(dialogView).create()
+        dialog.show()
 
-            val notificationManager = getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(channel)
+        dialog.findViewById<ImageButton>(R.id.btnCloseDialog)?.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        val txtTitulo = dialogView.findViewById<TextView>(R.id.txtTituloDialog)
+        val txtDescripcion = dialogView.findViewById<TextView>(R.id.txtDescripcionDialog)
+        val txtDetalles = dialogView.findViewById<TextView>(R.id.txtDetallesDialog)
+
+        txtTitulo.text = cita.titulo
+        txtDescripcion.text = cita.descripcion
+        txtDetalles.text = buildString {
+            append("Cercanía: ${mapCercania(cita.cercania)}\n")
+            append("Dinero: ${mapDinero(cita.dinero)}\n")
+            append("Facilidad: ${mapFacilidad(cita.facilidad)}\n")
+            append("Intensidad: ${mapIntensidad(cita.intensidad)}\n")
+            append("Temporada: ${mapTemporada(cita.temporada)}")
         }
     }
 
+    private fun mapCercania(valor: Int?): String = when (valor) { 1 -> "Lej -> Cerca"; 2 -> "Lej -> Normal"; 3 -> "Lejanía -> Lejos"; else -> "N/A" }
+    private fun mapDinero(valor: Int?): String = when (valor) { 1 -> "Gratis"; 2 -> "Poco"; 3 -> "Mucho"; else -> "N/A" }
+    private fun mapFacilidad(valor: Int?): String = when (valor) { 1 -> "Fácil"; 2 -> "Normal"; 3 -> "Difícil"; else -> "N/A" }
+    private fun mapIntensidad(valor: Int?): String = when (valor) { 1 -> "Int-> Tranqui"; 2 -> "Int-> Normal"; 3 -> "Int-> Intenso"; else -> "N/A" }
+    private fun mapTemporada(valor: Int?): String = when (valor) { 1 -> "Invierno"; 2 -> "Verano"; 3 -> "Otro"; else -> "N/A" }
 }

@@ -251,7 +251,7 @@ class LoginActivity : AppCompatActivity() {
         cache.edit()
             .putString("username", username)
             .putString("email", email)
-            .putLong("id", id)
+            .putLong("user_id", id) // Clave corregida
             .apply()
 
         navegarAPantallaPrincipal()

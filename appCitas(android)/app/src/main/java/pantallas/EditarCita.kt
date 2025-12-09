@@ -125,17 +125,35 @@ class EditarCita : AppCompatActivity() {
     private fun cargarDatosDeLaCita() {
         lifecycleScope.launch {
             try {
-                val cita = RetrofitClient.citaApi.getCitaPorId(citaId!!)
-                citaActual = cita
-                binding.etTituloCita.setText(cita.titulo)
-                binding.etDescripcionCita.setText(cita.descripcion)
-                binding.groupTemporada.check(when (cita.temporada) { 1 -> R.id.btnTemporadaBaja; 3 -> R.id.btnTemporadaAlta; else -> R.id.btnTemporadaMedia })
-                binding.groupDinero.check(when (cita.dinero) { 1 -> R.id.btnDineroBajo; 3 -> R.id.btnDineroAlto; else -> R.id.btnDineroMedio })
-                binding.groupIntensidad.check(when (cita.intensidad) { 1 -> R.id.btnIntensidadBaja; 3 -> R.id.btnIntensidadAlta; else -> R.id.btnIntensidadMedia })
-                binding.groupCercania.check(when (cita.cercania) { 1 -> R.id.btnCercaniaAlta; 3 -> R.id.btnCercaniaBaja; else -> R.id.btnCercaniaMedia })
-                binding.groupFacilidad.check(when (cita.facilidad) { 1 -> R.id.btnFacilidadAlta; 3 -> R.id.btnFacilidadBaja; else -> R.id.btnFacilidadMedia })
+                // 1. Obtenemos la respuesta completa (Response<Cita>)
+                val response = RetrofitClient.citaApi.getCita(citaId!!)
+
+                // 2. Verificamos si el servidor respondió correctamente (Código 200)
+                if (response.isSuccessful) {
+                    // 3. Extraemos el cuerpo de la respuesta
+                    val citaRecibida = response.body()
+
+                    if (citaRecibida != null) {
+                        // Asignamos a la variable global
+                        citaActual = citaRecibida
+
+                        // Actualizamos la UI
+                        binding.etTituloCita.setText(citaRecibida.titulo)
+                        binding.etDescripcionCita.setText(citaRecibida.descripcion)
+
+                        binding.groupTemporada.check(when (citaRecibida.temporada) { 1 -> R.id.btnTemporadaBaja; 3 -> R.id.btnTemporadaAlta; else -> R.id.btnTemporadaMedia })
+                        binding.groupDinero.check(when (citaRecibida.dinero) { 1 -> R.id.btnDineroBajo; 3 -> R.id.btnDineroAlto; else -> R.id.btnDineroMedio })
+                        binding.groupIntensidad.check(when (citaRecibida.intensidad) { 1 -> R.id.btnIntensidadBaja; 3 -> R.id.btnIntensidadAlta; else -> R.id.btnIntensidadMedia })
+                        binding.groupCercania.check(when (citaRecibida.cercania) { 1 -> R.id.btnCercaniaAlta; 3 -> R.id.btnCercaniaBaja; else -> R.id.btnCercaniaMedia })
+                        binding.groupFacilidad.check(when (citaRecibida.facilidad) { 1 -> R.id.btnFacilidadAlta; 3 -> R.id.btnFacilidadBaja; else -> R.id.btnFacilidadMedia })
+                    }
+                } else {
+                    // Si la respuesta no fue exitosa (ej. error 404 o 500)
+                    Toast.makeText(this@EditarCita, "Error del servidor: ${response.code()}", Toast.LENGTH_LONG).show()
+                }
+
             } catch (e: Exception) {
-                Toast.makeText(this@EditarCita, "Error al cargar los datos: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@EditarCita, "Error de conexión: ${e.message}", Toast.LENGTH_LONG).show()
                 finish()
             }
         }

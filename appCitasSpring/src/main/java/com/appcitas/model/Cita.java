@@ -62,8 +62,11 @@ public class Cita implements Serializable {
     @Column(name = "tokenfirebase", length = 400)
     String tokenFirebase;
 
+    @Column(name = "couple_id")
+    Long coupleId;
+
     // --------------------------
-    // RELACIÓN CON USUARIO (creador_id)
+    // RELACIàN CON USUARIO (creador_id)
     // --------------------------
     @Column(name = "creador_id")
     private Long creadorId;
@@ -166,6 +169,14 @@ public class Cita implements Serializable {
 
     public void setTokenFirebase(String tokenFirebase) {
         this.tokenFirebase = tokenFirebase;
+    }
+
+    public Long getCoupleId() {
+        return coupleId;
+    }
+
+    public void setCoupleId(Long coupleId) {
+        this.coupleId = coupleId;
     }
 
     public static long getSerialversionuid() {

@@ -61,6 +61,12 @@ class MiPerfil : AppCompatActivity(), OnMapReadyCallback {
                     finish()
                     true
                 }
+                 R.id.nav_pareja -> {
+                    startActivity(Intent(this, ParejaActivity::class.java))
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    finish()
+                    true
+                }
                 R.id.nav_perfil -> {
                     // Ya estamos aquí
                     true
