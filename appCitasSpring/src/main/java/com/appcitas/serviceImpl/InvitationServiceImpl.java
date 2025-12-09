@@ -4,8 +4,12 @@ import com.appcitas.dto.InvitationMapper;
 import com.appcitas.dto.InvitationResponse;
 import com.appcitas.dto.SendInvitationRequest;
 import com.appcitas.model.Invitation;
+import com.appcitas.model.InvitationStatus;
+import com.appcitas.model.Usuario;
 import com.appcitas.repository.InvitationRepository;
+import com.appcitas.repository.UsuarioRepo;
 import com.appcitas.service.InvitationService;
+import org.springframework.stereotype.Service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,33 +22,49 @@ import java.util.stream.Collectors;
 @Service
 public class InvitationServiceImpl implements InvitationService {
 
-    private static final Logger log = LoggerFactory.getLogger(InvitationServiceImpl.class);
+    private final UsuarioRepo usuarioRepo;
 
     private final InvitationRepository invitationRepository;
 
-    public InvitationServiceImpl(InvitationRepository invitationRepository) {
+    public InvitationServiceImpl(InvitationRepository invitationRepository, UsuarioRepo usuarioRepo) {
         this.invitationRepository = invitationRepository;
+        this.usuarioRepo = usuarioRepo;
     }
 
     @Override
     public void sendInvitation(SendInvitationRequest request) {
-        log.info("Recibida solicitud de invitacion para el email=\"{}\"", request.getToEmail());
 
+        // 1. Usuario que ENVÍA (fromUserId obligatorio)
+        Usuario fromUsuario = usuarioRepo.findById(request.getFromUserId())
+                .orElseThrow(() -> new IllegalArgumentException("Usuario emisor no encontrado"));
+
+        // 2. Usuario que RECIBE (opcional)
+        Usuario toUsuario = null;
+
+        if (request.getToUserId() != null) {
+            // Si viene id → buscamos por id
+            toUsuario = usuarioRepo.findById(request.getToUserId())
+                    .orElseThrow(() -> new IllegalArgumentException("Usuario destino no encontrado"));
+        } else if (request.getToEmail() != null && !request.getToEmail().isBlank()) {
+            // Si no viene id → intentamos localizarlo por email
+            toUsuario = usuarioRepo.findByEmail(request.getToEmail())
+                    .orElse(null); // puede no existir aún, no pasa nada
+        }
+
+        // 3. Crear invitación
         Invitation invitation = new Invitation();
-        invitation.setFromUserId(request.getFromUserId());
-        invitation.setToUserId(request.getToUserId());
+        invitation.setFromUserId(fromUsuario.getId()); // usa aquí el nombre de tu campo real
+        invitation.setToUserId(toUsuario.getId()); // puede ser null
         invitation.setToEmail(request.getToEmail());
-        invitation.setStatus("PENDING"); // también lo pone @PrePersist por si acaso
+        invitation.setStatus(InvitationStatus.PENDING);
 
-        Invitation saved = invitationRepository.save(invitation);
-
-        log.info("Invitación guardada con id={} para email=\"{}\"",
-                saved.getId(), saved.getToEmail());
+        // 4. Guardar
+        invitationRepository.save(invitation);
     }
 
     @Override
     public List<InvitationResponse> getPendingInvitations(Long userId) {
-        List<Invitation> invitations = invitationRepository.findByToUserIdAndStatus(userId, "PENDING");
+        List<Invitation> invitations = invitationRepository.findByToUserIdAndStatus(userId, InvitationStatus.PENDING);
 
         return invitations.stream()
                 .map(InvitationMapper::toResponse)
@@ -56,7 +76,7 @@ public class InvitationServiceImpl implements InvitationService {
         Invitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new NoSuchElementException("Invitation not found"));
 
-        invitation.setStatus("ACCEPTED");
+        invitation.setStatus(InvitationStatus.ACCEPTED);
         Invitation saved = invitationRepository.save(invitation);
 
         return InvitationMapper.toResponse(saved);
@@ -67,7 +87,7 @@ public class InvitationServiceImpl implements InvitationService {
         Invitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new NoSuchElementException("Invitation not found"));
 
-        invitation.setStatus("REJECTED");
+        invitation.setStatus(InvitationStatus.CANCELLED);
         Invitation saved = invitationRepository.save(invitation);
 
         return InvitationMapper.toResponse(saved);

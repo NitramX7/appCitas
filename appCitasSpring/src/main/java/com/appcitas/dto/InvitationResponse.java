@@ -2,20 +2,23 @@ package com.appcitas.dto;
 
 import java.time.LocalDateTime;
 
+import com.appcitas.model.InvitationStatus;
+
 public class InvitationResponse {
 
     private Long id;
     private Long fromUserId;
     private Long toUserId;
     private String toEmail;
-    private String status;
+    private InvitationStatus status;
     private LocalDateTime createdAt;
 
     public InvitationResponse() {
     }
 
     public InvitationResponse(Long id, Long fromUserId, Long toUserId,
-            String toEmail, String status, LocalDateTime createdAt) {
+            String toEmail, InvitationStatus status,
+            LocalDateTime createdAt) {
         this.id = id;
         this.fromUserId = fromUserId;
         this.toUserId = toUserId;
@@ -24,7 +27,7 @@ public class InvitationResponse {
         this.createdAt = createdAt;
     }
 
-    // Getters y setters
+    // ==== Getters y Setters ====
 
     public Long getId() {
         return id;
@@ -58,11 +61,11 @@ public class InvitationResponse {
         this.toEmail = toEmail;
     }
 
-    public String getStatus() {
+    public InvitationStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(InvitationStatus status) {
         this.status = status;
     }
 

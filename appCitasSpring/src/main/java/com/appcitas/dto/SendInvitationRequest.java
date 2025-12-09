@@ -2,12 +2,9 @@ package com.appcitas.dto;
 
 public class SendInvitationRequest {
 
-    private Long fromUserId;
-    private Long toUserId;
-    private String toEmail;
-
-    public SendInvitationRequest() {
-    }
+    private Long fromUserId; // obligatorio
+    private Long toUserId; // opcional
+    private String toEmail; // obligatorio
 
     public Long getFromUserId() {
         return fromUserId;

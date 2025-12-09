@@ -11,8 +11,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.appcitas.R
 import com.example.appcitas.RetrofitClient
-import com.example.appcitas.adapters.InvitationActionListener
 import com.example.appcitas.adapters.InvitationAdapter
+import com.example.appcitas.adapters.InvitationActionListener
 import com.example.appcitas.databinding.ActivityParejaBinding
 import com.example.appcitas.model.Invitation
 import kotlinx.coroutines.launch
@@ -29,18 +29,12 @@ class ParejaActivity : AppCompatActivity(), InvitationActionListener {
         binding = ActivityParejaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // SharedPreferences
         cache = getSharedPreferences("cache", MODE_PRIVATE)
 
-        // Leemos el ID de usuario como Long
         currentUserId = cache.getLong("id", -1L)
 
         if (currentUserId == -1L) {
-            Toast.makeText(
-                this,
-                "Error crítico: usuario no autenticado. Inicia sesión de nuevo.",
-                Toast.LENGTH_LONG
-            ).show()
+            Toast.makeText(this, "Error Crítico: Usuario no autenticado. Por favor, inicie sesión de nuevo.", Toast.LENGTH_LONG).show()
             finish()
             return
         }
@@ -50,7 +44,7 @@ class ParejaActivity : AppCompatActivity(), InvitationActionListener {
         setupBottomNavigation()
 
         binding.btnEnviarInvitacion.setOnClickListener {
-            val email = binding.etEmailPareja.text.toString().trim()
+            val email = binding.etEmailPareja.text.toString()
             if (email.isNotBlank()) {
                 sendInvitation(email)
             } else {
@@ -61,20 +55,17 @@ class ParejaActivity : AppCompatActivity(), InvitationActionListener {
         loadPendingInvitations()
     }
 
-    // Toolbar
     private fun setupToolbar() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.title = "Pareja"
     }
 
-    // RecyclerView
     private fun setupRecyclerView() {
         invitationAdapter = InvitationAdapter(mutableListOf(), this)
         binding.rvInvitaciones.layoutManager = LinearLayoutManager(this)
         binding.rvInvitaciones.adapter = invitationAdapter
     }
 
-    // Bottom navigation
     private fun setupBottomNavigation() {
         binding.bottomNavigation.selectedItemId = R.id.nav_pareja
 
@@ -101,50 +92,36 @@ class ParejaActivity : AppCompatActivity(), InvitationActionListener {
         }
     }
 
-    // Enviar invitación
     private fun sendInvitation(email: String) {
+        // Creamos la petición solo con los campos necesarios
         val request = SendInvitationRequest(
-            fromUserId = currentUserId, // Long correcto
-            toUserId = null,            // cuando tengas el id real de la otra persona, lo pones aquí
+            fromUserId = currentUserId,
+            toUserId = null,
             toEmail = email
         )
 
         lifecycleScope.launch {
             try {
+                // Asumimos que la API de invitación es la correcta para enviar
                 val response = RetrofitClient.invitationApi.sendInvitation(request)
 
                 if (response.isSuccessful) {
-                    Toast.makeText(
-                        this@ParejaActivity,
-                        "Solicitud enviada correctamente",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(this@ParejaActivity, "Solicitud enviada correctamente", Toast.LENGTH_SHORT).show()
                     binding.etEmailPareja.text?.clear()
-                    loadPendingInvitations() // refrescar lista después de enviar
+                    loadPendingInvitations() // Actualiza la lista por si acaso
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    Log.e(
-                        "SEND_INVITATION",
-                        "Error al enviar solicitud: ${response.code()} - ${response.message()} - $errorBody"
-                    )
-                    Toast.makeText(
-                        this@ParejaActivity,
-                        "Error al enviar la solicitud (código ${response.code()})",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Log.e("SEND_INVITATION", "Error al enviar solicitud: ${response.code()} - ${response.message()} - $errorBody")
+                    Toast.makeText(this@ParejaActivity, "Error al enviar la solicitud (código ${response.code()})", Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {
                 Log.e("SEND_INVITATION", "Error de conexión", e)
-                Toast.makeText(
-                    this@ParejaActivity,
-                    "Error de conexión",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this@ParejaActivity, "Error de conexión", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    // Cargar invitaciones pendientes
+
     private fun loadPendingInvitations() {
         lifecycleScope.launch {
             try {
@@ -155,36 +132,21 @@ class ParejaActivity : AppCompatActivity(), InvitationActionListener {
                     invitationAdapter.updateData(invitations)
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    Log.e(
-                        "LOAD_INVITATIONS",
-                        "Error al cargar: ${response.code()} - ${response.message()} - $errorBody"
-                    )
-                    Toast.makeText(
-                        this@ParejaActivity,
-                        "Error al cargar las solicitudes (código ${response.code()})",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Log.e("LOAD_INVITATIONS", "Error al cargar: ${response.code()} - ${response.message()} - $errorBody")
+                    Toast.makeText(this@ParejaActivity, "Error al cargar las solicitudes (código ${response.code()})", Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {
                 Log.e("LOAD_INVITATIONS", "Error de conexión", e)
-                Toast.makeText(
-                    this@ParejaActivity,
-                    "Error de conexión",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this@ParejaActivity, "Error de conexión", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    // Aceptar invitación (te dejo el esqueleto listo para cuando quieras)
     override fun onAcceptInvitation(invitation: Invitation) {
-        // Aquí luego usarás invitation.id para llamar a acceptInvitation
-        // y refrescar la lista
+       // Implementar lógica de aceptación aquí
     }
 
-    // Rechazar invitación (igual)
     override fun onRejectInvitation(invitation: Invitation) {
-        // Aquí luego llamarás a rejectInvitation con invitation.id
-        // y refrescarás la lista
+       // Implementar lógica de rechazo aquí
     }
 }
