@@ -261,7 +261,7 @@ class RegisterActivity : AppCompatActivity() {
         cache.edit()
             .putString("username", username)
             .putString("email", email)
-            .putLong("id", id)
+            .putLong("id", id) // Clave corregida
             .apply()
 
         navegarAPantallaPrincipal()

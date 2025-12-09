@@ -78,6 +78,7 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
         if (idUsuario != 0L) {
             cargarCitasUsuario(idUsuario)
         }
+
     }
 
     private fun createNotificationChannel() {
