@@ -15,8 +15,11 @@ public interface CitaRepo extends JpaRepository<Cita, Long> {
                         "AND (:intensidad IS NULL OR c.intensidad = :intensidad) " +
                         "AND (:cercania IS NULL OR c.cercania = :cercania) " +
                         "AND (:facilidad IS NULL OR c.facilidad = :facilidad) " +
-                        "AND (:creadorId IS NULL OR c.creadorId = :creadorId) " +
-                        "AND (:coupleId IS NULL OR c.coupleId = :coupleId) " +
+                        "AND (" +
+                        "   (:creadorId IS NULL OR c.creadorId = :creadorId) " +
+                        "   OR " +
+                        "   (:coupleId IS NOT NULL AND c.creadorId = :coupleId) " +
+                        ") " +
                         "AND (:id IS NULL OR c.id = :id)")
         List<Cita> filtrarCitas(
                         @Param("temporada") Integer temporada,

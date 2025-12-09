@@ -56,8 +56,22 @@ public class CitaServiceImpl implements CitaService {
         return null;
     }
 
+    @Autowired
+    com.appcitas.repository.UsuarioRepo usuarioRepo;
+
     @Override
     public List<Cita> filtrarCitas(CitaFiltroRequest filtros) {
+        Long partnerId = null;
+        if (filtros.getCreadorId() != null) {
+            Optional<com.appcitas.model.Usuario> userOpt = usuarioRepo.findById(filtros.getCreadorId());
+            if (userOpt.isPresent()) {
+                com.appcitas.model.Usuario user = userOpt.get();
+                if (user.getEstado_p() != null && user.getEstado_p() == 1 && user.getPareja() != null) {
+                    partnerId = user.getPareja().getId();
+                }
+            }
+        }
+
         return citaRepositorio.filtrarCitas(
                 filtros.getTemporada(),
                 filtros.getDinero(),
@@ -65,7 +79,7 @@ public class CitaServiceImpl implements CitaService {
                 filtros.getCercania(),
                 filtros.getFacilidad(),
                 filtros.getCreadorId(),
-                filtros.getCoupleId(),
+                partnerId, // Use the calculated partnerId
                 filtros.getId());
     }
 

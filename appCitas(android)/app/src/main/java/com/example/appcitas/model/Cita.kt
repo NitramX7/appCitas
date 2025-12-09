@@ -1,6 +1,6 @@
 package com.example.appcitas.model
 
-import java.time.LocalDateTime
+
 
 data class Cita(
     val id: Long? = null,
@@ -12,7 +12,7 @@ data class Cita(
     val cercania: Int? = null,
     val facilidad: Int? = null,
     val esDefault: Boolean = false,
-    val fechaCreacion: LocalDateTime? = null,
+    val fechaCreacion: String? = null,
     val tokenFirebase: String? = null,
     val coupleId: Long? = null,
     val creadorId: Long? = null

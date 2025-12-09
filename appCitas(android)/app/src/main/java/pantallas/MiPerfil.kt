@@ -42,6 +42,8 @@ class MiPerfil : AppCompatActivity(), OnMapReadyCallback {
         binding.btnCerrarSesion.setOnClickListener {
             cerrarSesion()
         }
+        
+        setupCoupleLogic()
     }
 
     private fun setupBottomNavigation() {
@@ -105,6 +107,127 @@ class MiPerfil : AppCompatActivity(), OnMapReadyCallback {
         super.onResume()
         // Asegura que el ítem de perfil esté seleccionado al volver a esta pantalla
         binding.bottomNavigation.selectedItemId = R.id.nav_perfil
+    }
+
+    private fun setupCoupleLogic() {
+        val cache = getSharedPreferences("cache", MODE_PRIVATE)
+        val estadoP = cache.getInt("estado_p", 0)
+        val idPareja = cache.getLong("id_pareja", 0L)
+        val userId = cache.getLong("id", 0L)
+
+        val layoutContainer = findViewById<android.widget.LinearLayout>(R.id.layout_pareja_container)
+        val tvStatus = findViewById<android.widget.TextView>(R.id.tvParejaStatus)
+        val btnVincular = findViewById<com.google.android.material.button.MaterialButton>(R.id.btnVincularPareja)
+        val rvSolicitudes = findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvSolicitudes)
+        val tvSolicitudesTitle = findViewById<android.widget.TextView>(R.id.tvSolicitudesTitle)
+
+        if (estadoP == 1) {
+            tvStatus.text = "Tienes una pareja vinculada (ID: $idPareja)"
+            btnVincular.visibility = android.view.View.GONE
+        } else {
+            tvStatus.text = "No tienes pareja vinculada"
+            btnVincular.visibility = android.view.View.VISIBLE
+            btnVincular.setOnClickListener {
+                mostrarDialogoVincular(userId)
+            }
+            cargarSolicitudes(userId, rvSolicitudes, tvSolicitudesTitle)
+        }
+    }
+
+    private fun mostrarDialogoVincular(userId: Long) {
+        val input = android.widget.EditText(this)
+        input.hint = "Email del usuario"
+        
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Vincular con pareja")
+            .setMessage("Introduce el email de tu pareja:")
+            .setView(input)
+            .setPositiveButton("Enviar") { _, _ ->
+                val email = input.text.toString()
+                if (email.isNotEmpty()) {
+                    enviarSolicitud(userId, email)
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun enviarSolicitud(userId: Long, email: String) {
+        val request = com.example.appcitas.model.SolicitudRequest(email)
+        com.example.appcitas.RetrofitClient.solicitudApi.enviarSolicitud(userId, request)
+            .enqueue(object : retrofit2.Callback<com.example.appcitas.model.SolicitudPareja> {
+                override fun onResponse(call: retrofit2.Call<com.example.appcitas.model.SolicitudPareja>, response: retrofit2.Response<com.example.appcitas.model.SolicitudPareja>) {
+                    if (response.isSuccessful) {
+                        Toast.makeText(this@MiPerfil, "Solicitud enviada", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@MiPerfil, "Error al enviar: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                override fun onFailure(call: retrofit2.Call<com.example.appcitas.model.SolicitudPareja>, t: Throwable) {
+                    Toast.makeText(this@MiPerfil, "Error de red: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
+    }
+
+    private fun cargarSolicitudes(userId: Long, rv: androidx.recyclerview.widget.RecyclerView, title: android.widget.TextView) {
+        com.example.appcitas.RetrofitClient.solicitudApi.obtenerSolicitudesRecibidas(userId)
+            .enqueue(object : retrofit2.Callback<List<com.example.appcitas.model.SolicitudPareja>> {
+                override fun onResponse(call: retrofit2.Call<List<com.example.appcitas.model.SolicitudPareja>>, response: retrofit2.Response<List<com.example.appcitas.model.SolicitudPareja>>) {
+                    if (response.isSuccessful && response.body() != null) {
+                        val solicitudes = response.body()!!
+                        if (solicitudes.isNotEmpty()) {
+                            title.visibility = android.view.View.VISIBLE
+                            rv.visibility = android.view.View.VISIBLE
+                            rv.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this@MiPerfil)
+                            rv.adapter = com.example.appcitas.adapter.SolicitudAdapter(solicitudes, 
+                                { aceptarSolicitud(it.id) },
+                                { rechazarSolicitud(it.id) }
+                            )
+                        } else {
+                            title.visibility = android.view.View.GONE
+                            rv.visibility = android.view.View.GONE
+                        }
+                    }
+                }
+                override fun onFailure(call: retrofit2.Call<List<com.example.appcitas.model.SolicitudPareja>>, t: Throwable) {
+                    // Ignorar error silenciosamente o loguear
+                }
+            })
+    }
+
+    private fun aceptarSolicitud(id: Long) {
+        com.example.appcitas.RetrofitClient.solicitudApi.aceptarSolicitud(id)
+            .enqueue(object : retrofit2.Callback<Void> {
+                override fun onResponse(call: retrofit2.Call<Void>, response: retrofit2.Response<Void>) {
+                    if (response.isSuccessful) {
+                        Toast.makeText(this@MiPerfil, "Solicitud aceptada", Toast.LENGTH_SHORT).show()
+                        // Actualizar estado localmente y recargar UI
+                        val cache = getSharedPreferences("cache", MODE_PRIVATE)
+                        cache.edit().putInt("estado_p", 1).apply()
+                        recreate()
+                    } else {
+                        Toast.makeText(this@MiPerfil, "Error al aceptar", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                override fun onFailure(call: retrofit2.Call<Void>, t: Throwable) {
+                    Toast.makeText(this@MiPerfil, "Error de red", Toast.LENGTH_SHORT).show()
+                }
+            })
+    }
+
+    private fun rechazarSolicitud(id: Long) {
+        com.example.appcitas.RetrofitClient.solicitudApi.rechazarSolicitud(id)
+            .enqueue(object : retrofit2.Callback<Void> {
+                override fun onResponse(call: retrofit2.Call<Void>, response: retrofit2.Response<Void>) {
+                    if (response.isSuccessful) {
+                        Toast.makeText(this@MiPerfil, "Solicitud rechazada", Toast.LENGTH_SHORT).show()
+                        recreate()
+                    }
+                }
+                override fun onFailure(call: retrofit2.Call<Void>, t: Throwable) {
+                    Toast.makeText(this@MiPerfil, "Error de red", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 
     override fun onMapReady(googleMap: GoogleMap) {

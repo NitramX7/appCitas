@@ -216,7 +216,7 @@ class LoginActivity : AppCompatActivity() {
                 val idToken = task.result.token
                 if (idToken != null) {
                     val tokenMap = mapOf("token" to idToken)
-                    RetrofitClient.api.verificarToken(tokenMap).enqueue(object : Callback<Usuario> {
+                    RetrofitClient.authApi.verificarToken(tokenMap).enqueue(object : Callback<Usuario> {
                         override fun onResponse(call: Call<Usuario>, response: Response<Usuario>) {
                             if (response.isSuccessful && response.body() != null) {
                                 val usuarioBackend = response.body()!!
@@ -228,11 +228,18 @@ class LoginActivity : AppCompatActivity() {
                                 Toast.makeText(this@LoginActivity, "¡Bienvenido, $nombreAMostrar!", Toast.LENGTH_SHORT).show()
                                 guardarDatosYNavegar(usuarioBackend, firebaseUser)
                             } else {
+                                Log.e(TAG, "Backend verification failed. Code: ${response.code()}, Message: ${response.message()}")
+                                try {
+                                    Log.e(TAG, "Error body: ${response.errorBody()?.string()}")
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Could not read error body", e)
+                                }
                                 Toast.makeText(this@LoginActivity, "Error del servidor: ${response.code()}", Toast.LENGTH_LONG).show()
                                 cerrarSesion()
                             }
                         }
                         override fun onFailure(call: Call<Usuario>, t: Throwable) {
+                            Log.e(TAG, "Network error during verification", t)
                             Toast.makeText(this@LoginActivity, "Error de conexión con el servidor: ${t.message}", Toast.LENGTH_LONG).show()
                             cerrarSesion()
                         }
@@ -251,7 +258,9 @@ class LoginActivity : AppCompatActivity() {
         cache.edit()
             .putString("username", username)
             .putString("email", email)
-            .putLong("id", id) // Clave corregida
+            .putLong("id", id)
+            .putInt("estado_p", user.estado_p)
+            .putLong("id_pareja", user.pareja?.id ?: 0L)
             .apply()
 
         navegarAPantallaPrincipal()

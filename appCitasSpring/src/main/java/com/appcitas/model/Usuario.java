@@ -1,7 +1,7 @@
 package com.appcitas.model;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;   // si tu columna fecha_registro es DATETIME
+import java.time.LocalDateTime; // si tu columna fecha_registro es DATETIME
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,7 +16,9 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "usuarios")
-@Data @AllArgsConstructor @NoArgsConstructor
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Usuario implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -45,6 +47,15 @@ public class Usuario implements Serializable {
 
     @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro = LocalDateTime.now();
+
+    @Column(name = "estado_p", nullable = false, columnDefinition = "int default 0")
+    private Integer estado_p = 0;
+
+    @javax.persistence.OneToOne(fetch = javax.persistence.FetchType.LAZY)
+    @javax.persistence.JoinColumn(name = "id_pareja")
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "pareja", "password", "fcmToken", "citas",
+            "solicitudesEnviadas", "solicitudesRecibidas", "hibernateLazyInitializer", "handler" })
+    private Usuario pareja;
 
     // --------------------------
     // GETTERS / SETTERS
@@ -105,6 +116,22 @@ public class Usuario implements Serializable {
 
     public void setFechaRegistro(LocalDateTime fechaRegistro) {
         this.fechaRegistro = fechaRegistro;
+    }
+
+    public Integer getEstado_p() {
+        return estado_p;
+    }
+
+    public void setEstado_p(Integer estado_p) {
+        this.estado_p = estado_p;
+    }
+
+    public Usuario getPareja() {
+        return pareja;
+    }
+
+    public void setPareja(Usuario pareja) {
+        this.pareja = pareja;
     }
 
     public static long getSerialversionuid() {

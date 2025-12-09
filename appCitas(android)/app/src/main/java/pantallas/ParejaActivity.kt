@@ -1,27 +1,26 @@
 package pantallas
 
-import SendInvitationRequest
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.appcitas.R
 import com.example.appcitas.RetrofitClient
-import com.example.appcitas.adapters.InvitationAdapter
-import com.example.appcitas.adapters.InvitationActionListener
+import com.example.appcitas.adapter.SolicitudAdapter
 import com.example.appcitas.databinding.ActivityParejaBinding
-import com.example.appcitas.model.Couple
-import com.example.appcitas.model.Invitation
-import kotlinx.coroutines.launch
+import com.example.appcitas.model.SolicitudPareja
+import com.example.appcitas.model.SolicitudRequest
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
-class ParejaActivity : AppCompatActivity(), InvitationActionListener {
+class ParejaActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityParejaBinding
-    private lateinit var invitationAdapter: InvitationAdapter
+    private lateinit var solicitudAdapter: SolicitudAdapter
     private lateinit var cache: SharedPreferences
     private var currentUserId: Long = -1L
 
@@ -31,15 +30,10 @@ class ParejaActivity : AppCompatActivity(), InvitationActionListener {
         setContentView(binding.root)
 
         cache = getSharedPreferences("cache", MODE_PRIVATE)
-
         currentUserId = cache.getLong("id", -1L)
 
         if (currentUserId == -1L) {
-            Toast.makeText(
-                this,
-                "Error Crítico: Usuario no autenticado. Por favor, inicie sesión de nuevo.",
-                Toast.LENGTH_LONG
-            ).show()
+            Toast.makeText(this, "Error: Usuario no autenticado.", Toast.LENGTH_LONG).show()
             finish()
             return
         }
@@ -66,9 +60,14 @@ class ParejaActivity : AppCompatActivity(), InvitationActionListener {
     }
 
     private fun setupRecyclerView() {
-        invitationAdapter = InvitationAdapter(mutableListOf(), this)
+        // Inicialmente vacía
+        solicitudAdapter = SolicitudAdapter(
+            emptyList(),
+            { solicitud -> aceptarSolicitud(solicitud.id) },
+            { solicitud -> rechazarSolicitud(solicitud.id) }
+        )
         binding.rvInvitaciones.layoutManager = LinearLayoutManager(this)
-        binding.rvInvitaciones.adapter = invitationAdapter
+        binding.rvInvitaciones.adapter = solicitudAdapter
     }
 
     private fun setupBottomNavigation() {
@@ -79,21 +78,21 @@ class ParejaActivity : AppCompatActivity(), InvitationActionListener {
                 R.id.nav_mis_citas -> {
                     startActivity(Intent(this, MisCitas::class.java))
                     overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    finish()
                     true
                 }
-
                 R.id.nav_crear_cita -> {
                     startActivity(Intent(this, CrearCita::class.java))
                     overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    finish()
                     true
                 }
-
                 R.id.nav_perfil -> {
                     startActivity(Intent(this, MiPerfil::class.java))
                     overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    finish()
                     true
                 }
-
                 R.id.nav_pareja -> true
                 else -> false
             }
@@ -101,147 +100,80 @@ class ParejaActivity : AppCompatActivity(), InvitationActionListener {
     }
 
     private fun sendInvitation(email: String) {
-        // Creamos la petición solo con los campos necesarios
-        val request = SendInvitationRequest(
-            fromUserId = currentUserId,
-            toUserId = null,
-            toEmail = email
-        )
-
-        lifecycleScope.launch {
-            try {
-                // Asumimos que la API de invitación es la correcta para enviar
-                val response = RetrofitClient.invitationApi.sendInvitation(request)
-
-                if (response.isSuccessful) {
-                    Toast.makeText(
-                        this@ParejaActivity,
-                        "Solicitud enviada correctamente",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    binding.etEmailPareja.text?.clear()
-                    loadPendingInvitations() // Actualiza la lista por si acaso
-                } else {
-                    val errorBody = response.errorBody()?.string()
-                    Log.e(
-                        "SEND_INVITATION",
-                        "Error al enviar solicitud: ${response.code()} - ${response.message()} - $errorBody"
-                    )
-                    Toast.makeText(
-                        this@ParejaActivity,
-                        "Error al enviar la solicitud (código ${response.code()})",
-                        Toast.LENGTH_LONG
-                    ).show()
+        val request = SolicitudRequest(email)
+        RetrofitClient.solicitudApi.enviarSolicitud(currentUserId, request)
+            .enqueue(object : Callback<SolicitudPareja> {
+                override fun onResponse(call: Call<SolicitudPareja>, response: Response<SolicitudPareja>) {
+                    if (response.isSuccessful) {
+                        Toast.makeText(this@ParejaActivity, "Solicitud enviada", Toast.LENGTH_SHORT).show()
+                        binding.etEmailPareja.text?.clear()
+                    } else {
+                        Toast.makeText(this@ParejaActivity, "Error al enviar: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    }
                 }
-            } catch (e: Exception) {
-                Log.e("SEND_INVITATION", "Error de conexión", e)
-                Toast.makeText(this@ParejaActivity, "Error de conexión", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
 
+                override fun onFailure(call: Call<SolicitudPareja>, t: Throwable) {
+                    Toast.makeText(this@ParejaActivity, "Error de red: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
+    }
 
     private fun loadPendingInvitations() {
-        lifecycleScope.launch {
-            try {
-                val response = RetrofitClient.invitationApi.getInvitationsByUser(currentUserId)
-                if (response.isSuccessful) {
-                    invitationAdapter.updateData(response.body() ?: emptyList())
-                } else {
-                    val errorBody = response.errorBody()?.string() ?: "Error desconocido"
-                    Log.e("LOAD_INVITATIONS", "Error al cargar: ${response.code()} - $errorBody")
-                    Toast.makeText(
-                        this@ParejaActivity,
-                        "Error al cargar las solicitudes: $errorBody",
-                        Toast.LENGTH_LONG
-                    ).show()
+        RetrofitClient.solicitudApi.obtenerSolicitudesRecibidas(currentUserId)
+            .enqueue(object : Callback<List<SolicitudPareja>> {
+                override fun onResponse(call: Call<List<SolicitudPareja>>, response: Response<List<SolicitudPareja>>) {
+                    if (response.isSuccessful && response.body() != null) {
+                        val solicitudes = response.body()!!
+                        // Recrear el adapter con la nueva lista
+                        solicitudAdapter = SolicitudAdapter(
+                            solicitudes,
+                            { solicitud -> aceptarSolicitud(solicitud.id) },
+                            { solicitud -> rechazarSolicitud(solicitud.id) }
+                        )
+                        binding.rvInvitaciones.adapter = solicitudAdapter
+                    } else {
+                        Log.e("ParejaActivity", "Error loading requests: ${response.code()}")
+                    }
                 }
-            } catch (e: Exception) {
-                Log.e("LOAD_INVITATIONS", "Error de conexión", e)
-                Toast.makeText(this@ParejaActivity, "Error de conexión", Toast.LENGTH_SHORT).show()
-            }
-        }
+
+                override fun onFailure(call: Call<List<SolicitudPareja>>, t: Throwable) {
+                    Log.e("ParejaActivity", "Network error", t)
+                }
+            })
     }
 
-    override fun onAcceptInvitation(invitation: Invitation) {
-        lifecycleScope.launch {
-            try {
-                // 1) Aceptar la invitación en el backend
-                val acceptResponse = RetrofitClient.invitationApi.acceptInvitation(invitation.id)
-
-                if (!acceptResponse.isSuccessful) {
-                    val errorBody = acceptResponse.errorBody()?.string() ?: "Error desconocido"
-                    Toast.makeText(
-                        this@ParejaActivity,
-                        "Error al aceptar la invitación: $errorBody",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    return@launch
-                }
-
-                // 2) Crear la pareja: quien envió la invitación + quien la acepta
-                val couple = Couple(
-                    id = null,
-                    user1Id = invitation.senderId,  // ahora viene bien mapeado
-                    user2Id = currentUserId,
-                    createdAt = null
-                )
-
-                val coupleResponse = RetrofitClient.coupleApi.createCouple(couple)
-
-                if (coupleResponse.isSuccessful) {
-                    Toast.makeText(
-                        this@ParejaActivity,
-                        "¡Invitación aceptada! Ahora sois pareja.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+    private fun aceptarSolicitud(id: Long) {
+        RetrofitClient.solicitudApi.aceptarSolicitud(id).enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful) {
+                    Toast.makeText(this@ParejaActivity, "Solicitud aceptada", Toast.LENGTH_SHORT).show()
+                    cache.edit().putInt("estado_p", 1).apply()
                     loadPendingInvitations()
                 } else {
-                    val errorBody = coupleResponse.errorBody()?.string() ?: "Error desconocido"
-                    Toast.makeText(
-                        this@ParejaActivity,
-                        "Invitación aceptada, pero error al crear la pareja: $errorBody",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Toast.makeText(this@ParejaActivity, "Error al aceptar", Toast.LENGTH_SHORT).show()
                 }
-
-            } catch (e: Exception) {
-                Log.e("ACCEPT_INVITATION", "Error de conexión al aceptar/crear pareja", e)
-                Toast.makeText(
-                    this@ParejaActivity,
-                    "Error de conexión al aceptar la invitación.",
-                    Toast.LENGTH_SHORT
-                ).show()
             }
-        }
+
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                Toast.makeText(this@ParejaActivity, "Error de red", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
-
-    override fun onRejectInvitation(invitation: Invitation) {
-        lifecycleScope.launch {
-            try {
-                val response = RetrofitClient.invitationApi.rejectInvitation(invitation.id)
+    private fun rechazarSolicitud(id: Long) {
+        RetrofitClient.solicitudApi.rechazarSolicitud(id).enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (response.isSuccessful) {
-                    Toast.makeText(this@ParejaActivity, "Invitación rechazada", Toast.LENGTH_SHORT)
-                        .show()
-                    loadPendingInvitations() // Recarga la lista para eliminar la invitación rechazada
+                    Toast.makeText(this@ParejaActivity, "Solicitud rechazada", Toast.LENGTH_SHORT).show()
+                    loadPendingInvitations()
                 } else {
-                    val errorBody = response.errorBody()?.string() ?: "Error desconocido"
-                    Toast.makeText(
-                        this@ParejaActivity,
-                        "Error al rechazar la invitación: $errorBody",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Toast.makeText(this@ParejaActivity, "Error al rechazar", Toast.LENGTH_SHORT).show()
                 }
-            } catch (e: Exception) {
-                Log.e("REJECT_INVITATION", "Error de conexión al rechazar", e)
-                Toast.makeText(
-                    this@ParejaActivity,
-                    "Error de conexión al rechazar la invitación.",
-                    Toast.LENGTH_SHORT
-                ).show()
             }
-        }
+
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                Toast.makeText(this@ParejaActivity, "Error de red", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 }
-

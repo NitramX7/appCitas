@@ -125,33 +125,26 @@ class EditarCita : AppCompatActivity() {
     private fun cargarDatosDeLaCita() {
         lifecycleScope.launch {
             try {
-                // 1. Obtenemos la respuesta completa (Response<Cita>)
                 val response = RetrofitClient.citaApi.getCita(citaId!!)
-
-                // 2. Verificamos si el servidor respondió correctamente (Código 200)
                 if (response.isSuccessful) {
-                    // 3. Extraemos el cuerpo de la respuesta
                     val citaRecibida = response.body()
-
                     if (citaRecibida != null) {
-                        // Asignamos a la variable global
                         citaActual = citaRecibida
-
-                        // Actualizamos la UI
                         binding.etTituloCita.setText(citaRecibida.titulo)
                         binding.etDescripcionCita.setText(citaRecibida.descripcion)
-
                         binding.groupTemporada.check(when (citaRecibida.temporada) { 1 -> R.id.btnTemporadaBaja; 3 -> R.id.btnTemporadaAlta; else -> R.id.btnTemporadaMedia })
                         binding.groupDinero.check(when (citaRecibida.dinero) { 1 -> R.id.btnDineroBajo; 3 -> R.id.btnDineroAlto; else -> R.id.btnDineroMedio })
                         binding.groupIntensidad.check(when (citaRecibida.intensidad) { 1 -> R.id.btnIntensidadBaja; 3 -> R.id.btnIntensidadAlta; else -> R.id.btnIntensidadMedia })
                         binding.groupCercania.check(when (citaRecibida.cercania) { 1 -> R.id.btnCercaniaAlta; 3 -> R.id.btnCercaniaBaja; else -> R.id.btnCercaniaMedia })
                         binding.groupFacilidad.check(when (citaRecibida.facilidad) { 1 -> R.id.btnFacilidadAlta; 3 -> R.id.btnFacilidadBaja; else -> R.id.btnFacilidadMedia })
+                    } else {
+                        Toast.makeText(this@EditarCita, "La cita no fue encontrada.", Toast.LENGTH_LONG).show()
+                        finish()
                     }
                 } else {
-                    // Si la respuesta no fue exitosa (ej. error 404 o 500)
-                    Toast.makeText(this@EditarCita, "Error del servidor: ${response.code()}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@EditarCita, "Error al cargar la cita: ${response.code()}", Toast.LENGTH_LONG).show()
+                    finish()
                 }
-
             } catch (e: Exception) {
                 Toast.makeText(this@EditarCita, "Error de conexión: ${e.message}", Toast.LENGTH_LONG).show()
                 finish()
@@ -179,9 +172,13 @@ class EditarCita : AppCompatActivity() {
         val citaActualizada = Cita(id = citaId!!, titulo = titulo, descripcion = descripcion, temporada = temporada, dinero = dinero, intensidad = intensidad, cercania = cercania, facilidad = facilidad, creadorId = creadorId)
         lifecycleScope.launch {
             try {
-                RetrofitClient.citaApi.actualizarCita(citaId!!, citaActualizada)
-                Toast.makeText(this@EditarCita, "Cita actualizada con éxito", Toast.LENGTH_SHORT).show()
-                finish()
+                val response = RetrofitClient.citaApi.actualizarCita(citaId!!, citaActualizada)
+                if (response.isSuccessful) {
+                    Toast.makeText(this@EditarCita, "Cita actualizada con éxito", Toast.LENGTH_SHORT).show()
+                    finish()
+                } else {
+                    Toast.makeText(this@EditarCita, "Error al actualizar: ${response.code()}", Toast.LENGTH_LONG).show()
+                }
             } catch (e: Exception) {
                 Toast.makeText(this@EditarCita, "Error al actualizar: ${e.message}", Toast.LENGTH_LONG).show()
             }

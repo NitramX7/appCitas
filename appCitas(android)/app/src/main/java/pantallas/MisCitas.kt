@@ -58,10 +58,12 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
         cache = getSharedPreferences("cache", MODE_PRIVATE)
 
         createNotificationChannel()
-        setupToolbar()
+        createNotificationChannel()
+        // setupToolbar() // Removed as we have a custom header now
         setupRecyclerView()
         setupBottomNavigation()
         setupSensor()
+        setupUserInfo()
 
         binding.fabBuscarCita.setOnClickListener {
             mostrarDialogoFiltros()
@@ -95,10 +97,9 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
         }
     }
 
-    private fun setupToolbar() {
-        setSupportActionBar(binding.toolbar)
-        val username = cache.getString("username", null)
-        supportActionBar?.title = if (!username.isNullOrEmpty()) "Bienvenido, $username" else "CitaPlanner"
+    private fun setupUserInfo() {
+        val username = cache.getString("username", "Usuario")
+        binding.tvUsername.text = username
     }
 
     private fun setupRecyclerView() {
