@@ -63,6 +63,8 @@ class MiPerfil : AppCompatActivity(), OnMapReadyCallback {
         val cache = getSharedPreferences("cache", MODE_PRIVATE)
         val fotoUrl = cache.getString("fotoUrl", null)
         
+        android.util.Log.d("MiPerfil", "Cargando foto desde cache - fotoUrl: $fotoUrl")
+        
         // Load existing image if available
         if (!fotoUrl.isNullOrEmpty()) {
              Glide.with(this)

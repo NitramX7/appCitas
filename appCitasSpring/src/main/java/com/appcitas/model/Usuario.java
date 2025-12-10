@@ -113,6 +113,14 @@ public class Usuario implements Serializable {
         this.fcmToken = fcmToken;
     }
 
+    public String getFotoUrl() {
+        return fotoUrl;
+    }
+
+    public void setFotoUrl(String fotoUrl) {
+        this.fotoUrl = fotoUrl;
+    }
+
     public LocalDateTime getFechaRegistro() {
         return fechaRegistro;
     }

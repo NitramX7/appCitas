@@ -254,11 +254,15 @@ class LoginActivity : AppCompatActivity() {
         val username = if (!displayName.isNullOrEmpty()) displayName else user.username ?: ""
         val email = user.email ?: ""
         val id = user.id ?: 0L
+        val fotoUrl = user.fotoUrl
+
+        android.util.Log.d("LoginActivity", "Guardando en cache - fotoUrl: $fotoUrl")
 
         cache.edit()
             .putString("username", username)
             .putString("email", email)
             .putLong("id", id)
+            .putString("fotoUrl", user.fotoUrl) // Guardamos la URL de la foto
             .putInt("estado_p", user.estado_p)
             .putLong("id_pareja", user.pareja?.id ?: 0L)
             .apply()

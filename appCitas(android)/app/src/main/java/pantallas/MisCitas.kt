@@ -42,6 +42,7 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private var accelerometer: Sensor? = null
     private var filtroSeleccionado: CitaFiltroRequest? = null
+    private var shakeDialog: AlertDialog? = null  // Referencia al dialog de shake
     private var lastShakeTime: Long = 0
     private val shakeThreshold = 10f
     private val shakeCooldownMs = 1500L
@@ -248,9 +249,9 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
                     facilidad = facilidadSeleccionada
                 )
 
-                Toast.makeText(this, "Filtros aplicados. ¡Buscando...!", Toast.LENGTH_SHORT).show()
-                filtroSeleccionado?.let { aplicarFiltrosYCargarCitas(it) }
                 dialog.dismiss()
+                // Mostrar el popup ÉPICO de shake
+                mostrarDialogoShake(filtroSeleccionado!!)
             }
         }
 
@@ -266,23 +267,32 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
     }
 
     private fun aplicarFiltrosYCargarCitas(filtro: CitaFiltroRequest) {
+        Log.d("FILTROS", "Aplicando filtros: $filtro")
         lifecycleScope.launch {
             try {
                 val response = RetrofitClient.citaApi.filtrarCitas(filtro)
+                Log.d("FILTROS", "Response code: ${response.code()}")
                 if (response.isSuccessful) {
                     val citas = response.body()
+                    Log.d("FILTROS", "Citas encontradas: ${citas?.size ?: 0}")
                     if (!citas.isNullOrEmpty()) {
                         val cita = citas.random()
+                        Log.d("FILTROS", "Mostrando cita: ${cita.titulo}")
                         mostrarDialogoDetallesCita(cita)
                     } else {
-                        Toast.makeText(this@MisCitas, "No se han encontrado citas con esos filtros", Toast.LENGTH_SHORT).show()
+                        // Cerrar el dialog de shake si está abierto
+                        shakeDialog?.dismiss()
+                        Toast.makeText(this@MisCitas, "Aún no hay citas creadas con esos filtros.\nSé el primero en crear una! 🚀", Toast.LENGTH_LONG).show()
                     }
                 } else {
-                    Toast.makeText(this@MisCitas, "Error al aplicar los filtros: ${response.message()}", Toast.LENGTH_SHORT).show()
+                    // Cerrar el dialog de shake si está abierto
+                    shakeDialog?.dismiss()
+                    Log.e("FILTROS", "Error response: ${response.errorBody()?.string()}")
+                    Toast.makeText(this@MisCitas, "Error al buscar citas: ${response.message()}", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Log.e("CITAS_FILTRADAS", "Error de conexión al cargar citas", e)
-                Toast.makeText(this@MisCitas, "Error de conexión", Toast.LENGTH_SHORT).show()
+                Log.e("FILTROS", "Excepción al cargar citas", e)
+                Toast.makeText(this@MisCitas, "Error de conexión: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -373,8 +383,25 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
 
     private fun mostrarDialogoDetallesCita(cita: Cita) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_cita_resultado, null)
-        val dialog = AlertDialog.Builder(this@MisCitas).setView(dialogView).create()
+        val dialog = AlertDialog.Builder(this@MisCitas)
+            .setView(dialogView)
+            .create()
+        
+        // Fondo transparente para que se vea el gradiente
+        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+        
         dialog.show()
+
+        // Animación de entrada épica
+        dialogView.alpha = 0f
+        dialogView.scaleX = 0.8f
+        dialogView.scaleY = 0.8f
+        dialogView.animate()
+            .alpha(1f)
+            .scaleX(1f)
+            .scaleY(1f)
+            .setDuration(300)
+            .start()
 
         dialog.findViewById<ImageButton>(R.id.btnCloseDialog)?.setOnClickListener {
             dialog.dismiss()
@@ -387,12 +414,127 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
         txtTitulo.text = cita.titulo
         txtDescripcion.text = cita.descripcion
         txtDetalles.text = buildString {
-            append("Cercanía: ${mapCercania(cita.cercania)}\n")
-            append("Dinero: ${mapDinero(cita.dinero)}\n")
-            append("Facilidad: ${mapFacilidad(cita.facilidad)}\n")
-            append("Intensidad: ${mapIntensidad(cita.intensidad)}\n")
-            append("Temporada: ${mapTemporada(cita.temporada)}")
+            append("✨ Cercanía: ${mapCercania(cita.cercania)}\n")
+            append("💰 Dinero: ${mapDinero(cita.dinero)}\n")
+            append("🎯 Facilidad: ${mapFacilidad(cita.facilidad)}\n")
+            append("⚡ Intensidad: ${mapIntensidad(cita.intensidad)}\n")
+            append("🌟 Temporada: ${mapTemporada(cita.temporada)}")
         }
+    }
+
+    private fun mostrarDialogoShake(filtro: CitaFiltroRequest) {
+        Log.d("SHAKE_DIALOG", "Mostrando dialog de shake con filtros: $filtro")
+        val dialogView = layoutInflater.inflate(R.layout.dialog_shake_to_search, null)
+        val ivPhoneShake = dialogView.findViewById<android.widget.ImageView>(R.id.ivPhoneShake)
+        val tvTitle = dialogView.findViewById<TextView>(R.id.tvTitle)
+        val tvShakeCounter = dialogView.findViewById<TextView>(R.id.tvShakeCounter)
+        
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(true)  // Permitir cerrar con back button
+            .create()
+        
+        // Guardar referencia para poder cerrarlo desde otras funciones
+        shakeDialog = dialog
+        
+        // Aplicar fondo transparente para que se vea el fondo del XML
+        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+        
+        // Iniciar animaciones
+        val shakeAnim = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.shake_phone)
+        val pulseAnim = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.pulse_text)
+        ivPhoneShake.startAnimation(shakeAnim)
+        tvTitle.startAnimation(pulseAnim)
+        
+        // Variable para controlar si ya se disparó la búsqueda
+        var searchTriggered = false
+        
+        // Listener temporal para el shake
+        val shakeListener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                if (event == null || searchTriggered) return
+                
+                val x = event.values[0]
+                val y = event.values[1]
+                val z = event.values[2]
+                
+                // Calcular aceleración sin la gravedad (9.8)
+                val gX = x / 9.8f
+                val gY = y / 9.8f
+                val gZ = z / 9.8f
+                
+                val gForce = sqrt((gX * gX + gY * gY + gZ * gZ).toDouble()).toFloat()
+                val currentTime = System.currentTimeMillis()
+                
+                Log.d("SHAKE_DIALOG", "gForce: $gForce")
+                
+                // Detección de shake (umbral: 2.0g)
+                if (gForce > 2.0f && (currentTime - lastShakeTime) > 500L) {
+                    lastShakeTime = currentTime
+                    searchTriggered = true
+                    
+                    // Animación de "BOOM!"
+                    tvShakeCounter.text = "🔥"
+                    tvShakeCounter.animate()
+                        .alpha(1f)
+                        .scaleX(3f)
+                        .scaleY(3f)
+                        .setDuration(300)
+                        .withEndAction {
+                            // Cerrar dialog y buscar
+                            sensorManager.unregisterListener(this)
+                            dialog.dismiss()
+                            aplicarFiltrosYCargarCitas(filtro)
+                        }
+                        .start()
+                }
+            }
+            
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+        }
+        
+        // Registrar el listener temporal
+        val sensorRegistered = if (accelerometer != null) {
+            sensorManager.registerListener(
+                shakeListener,
+                accelerometer,
+                SensorManager.SENSOR_DELAY_UI
+            )
+        } else {
+            Log.e("SHAKE_DIALOG", "Acelerómetro no disponible")
+            false
+        }
+        
+        Log.d("SHAKE_DIALOG", "Sensor registrado: $sensorRegistered")
+        
+        // ALTERNATIVA: Click en el icono para dispositivos sin acelerómetro
+        ivPhoneShake.setOnClickListener {
+            if (!searchTriggered) {
+                searchTriggered = true
+                Log.d("SHAKE_DIALOG", "¡CLICK DETECTADO! (alternativa)")
+                
+                // Animación de "BOOM!"
+                tvShakeCounter.text = "🔥"
+                tvShakeCounter.animate()
+                    .alpha(1f)
+                    .scaleX(3f)
+                    .scaleY(3f)
+                    .setDuration(300)
+                    .withEndAction {
+                        sensorManager.unregisterListener(shakeListener)
+                        dialog.dismiss()
+                        aplicarFiltrosYCargarCitas(filtro)
+                    }
+                    .start()
+            }
+        }
+        
+        // Asegurarse de limpiar el listener si se cierra el dialog
+        dialog.setOnDismissListener {
+            sensorManager.unregisterListener(shakeListener)
+        }
+        
+        dialog.show()
     }
 
     private fun mapCercania(valor: Int?): String = when (valor) { 1 -> "Lej -> Cerca"; 2 -> "Lej -> Normal"; 3 -> "Lejanía -> Lejos"; else -> "N/A" }

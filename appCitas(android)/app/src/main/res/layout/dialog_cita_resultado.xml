@@ -1,45 +1,134 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_cita_resultado_epic"
+    android:padding="32dp">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <!-- Icono de estrella/trofeo épico -->
+    <ImageView
+        android:id="@+id/ivCitaIcon"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/ic_trophy"
+        android:tint="#FFD700"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp" />
+
+    <!-- Título épico con sombras -->
+    <TextView
+        android:id="@+id/txtTituloDialog"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:text="Tu Cita Perfecta"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:textAlignment="center"
+        android:shadowColor="#000000"
+        android:shadowDx="0"
+        android:shadowDy="4"
+        android:shadowRadius="8"
+        app:layout_constraintTop_toBottomOf="@id/ivCitaIcon"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp" />
 
-        <TextView
-            android:id="@+id/txtTituloDialog"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Título de la Cita"
-            android:textSize="22sp"
-            android:textStyle="bold" />
+    <!-- Card con descripción -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardDescripcion"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="#1A237E"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
+        app:strokeColor="#5C6BC0"
+        app:strokeWidth="2dp"
+        app:layout_constraintTop_toBottomOf="@id/txtTituloDialog"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="20dp">
 
         <TextView
             android:id="@+id/txtDescripcionDialog"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Descripción de la cita..." />
+            android:text="Descripción de la cita..."
+            android:textSize="16sp"
+            android:textColor="#E8EAF6"
+            android:padding="16dp"
+            android:lineSpacingExtra="4dp" />
+    </com.google.android.material.card.MaterialCardView>
 
-        <TextView
-            android:id="@+id/txtDetallesDialog"
-            android:layout_width="wrap_content"
+    <!-- Separador brillante -->
+    <View
+        android:id="@+id/dividerEpic"
+        android:layout_width="150dp"
+        android:layout_height="3dp"
+        android:background="@drawable/bg_divider_gold"
+        app:layout_constraintTop_toBottomOf="@id/cardDescripcion"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp" />
+
+    <!-- Card con detalles -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardDetalles"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="#311B92"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
+        app:strokeColor="#7E57C2"
+        app:strokeWidth="2dp"
+        app:layout_constraintTop_toBottomOf="@id/dividerEpic"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Detalles:\n- Característica 1\n- Característica 2" />
+            android:orientation="vertical"
+            android:padding="16dp">
 
-    </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📊 Características"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#FFD700"
+                android:layout_marginBottom="8dp" />
 
+            <TextView
+                android:id="@+id/txtDetallesDialog"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Detalles..."
+                android:textSize="15sp"
+                android:textColor="#D1C4E9"
+                android:lineSpacingExtra="6dp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Botón cerrar elegante -->
     <ImageButton
         android:id="@+id/btnCloseDialog"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:src="@drawable/ic_close"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:layout_gravity="top|end"
-        android:contentDescription="Cerrar" />
+        android:background="@drawable/bg_close_button_epic"
+        android:tint="#FFFFFF"
+        android:contentDescription="Cerrar"
+        android:elevation="4dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="8dp" />
 
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
