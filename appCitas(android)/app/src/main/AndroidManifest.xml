@@ -9,6 +9,10 @@
         tools:node="remove" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <queries>
+        <package android:name="com.facebook.katana" />
+    </queries>
+
 
     <application
         android:name=".AppCitas"

@@ -11,7 +11,18 @@
     <color name="dusty_taupe">#A78A7F</color>
     <color name="mauve_bark">#735751</color>
 
-    <!-- Nuevos colores -->
     <color name="cream_white">#F5F5DC</color>
     <color name="dark_chocolate">#3E2723</color>
+
+    <!-- New Design Palette -->
+    <color name="bg_sage_light">#D8E2DC</color>
+    <color name="title_accent">#DDA15E</color>
+    <color name="label_pill_bg">#8C3A3A</color>
+    <color name="input_bg">#F3F3F0</color>
+    <color name="text_hint">#A0A090</color>
+    <color name="gradient_start">#D48BA1</color>
+    <color name="gradient_end">#C6A8D6</color>
+    <color name="slider_track_inactive">#E0E0E0</color>
+    <color name="season_selected_text">#FFFFFF</color>
+    <color name="season_unselected_text">#5D4037</color>
 </resources>

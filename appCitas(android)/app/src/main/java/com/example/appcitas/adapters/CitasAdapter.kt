@@ -52,6 +52,7 @@ class CitasAdapter(
         private val tvIntensidad: TextView = itemView.findViewById(R.id.tvChipIntensidad)
         private val tvCercania: TextView = itemView.findViewById(R.id.tvChipCercania)
         private val tvTemporada: TextView = itemView.findViewById(R.id.tvChipTemporada)
+        private val tvFacilidad: TextView = itemView.findViewById(R.id.tvChipFacilidad)
         private val ivMenu: ImageView = itemView.findViewById(R.id.ivMenuCita)
 
         fun bind(cita: Cita, listener: CitaActionListener) {
@@ -61,6 +62,7 @@ class CitasAdapter(
             tvIntensidad.text = mapIntensidad(cita.intensidad)
             tvCercania.text = mapCercania(cita.cercania)
             tvTemporada.text = mapTemporada(cita.temporada)
+            tvFacilidad.text = mapFacilidad(cita.facilidad)
 
             // 2. Listener para el icono del menú
             ivMenu.setOnClickListener { view ->
@@ -91,6 +93,7 @@ class CitasAdapter(
         private fun mapDinero(valor: Int?): String = when (valor) { 1 -> "Gratis"; 2 -> "Poco"; 3 -> "Mucho"; else -> "N/A" }
         private fun mapIntensidad(valor: Int?): String = when (valor) { 1 -> "Int-> Tranqui"; 2 -> "Int-> Normal"; 3 -> "Int-> Intenso"; else -> "N/A" }
         private fun mapCercania(valor: Int?): String = when (valor) { 1 -> "Lej -> Cerca"; 2 -> "Lej -> Normal"; 3 -> "Lejanía -> Lejos"; else -> "N/A" }
-        private fun mapTemporada(valor: Int?): String = when (valor) { 1 -> "Invierno"; 2 -> "Verano"; 3 -> "Otro"; else -> "N/A" }
+        private fun mapTemporada(valor: Int?): String = when (valor) { 1 -> "Invierno"; 2 -> "Verano"; 3 -> "Otoño"; 4 -> "Primavera"; else -> "N/A" }
+        private fun mapFacilidad(valor: Int?): String = when (valor) { 1 -> "Facil -> Fácil"; 2 -> "Facil -> Normal"; 3 -> "Facil -> Difícil"; else -> "N/A" }
     }
 }

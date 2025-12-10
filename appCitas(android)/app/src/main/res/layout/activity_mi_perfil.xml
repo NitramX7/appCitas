@@ -5,64 +5,57 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FDF5EC"
+    android:background="@drawable/bg_home_green"
     tools:context="pantallas.MiPerfil">
-
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/rojo"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="appCitas" />
-
-    </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="?attr/actionBarSize" 
+        android:paddingBottom="80dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="24dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Mi Perfil"
-                android:textSize="24sp"
+                android:textSize="28sp"
                 android:textStyle="bold"
-                android:textColor="@android:color/black"
-                android:layout_marginBottom="24dp"/>
+                android:textColor="#FFFFFF"
+                android:layout_marginBottom="24dp"
+                android:layout_marginTop="16dp"/>
 
+            <!-- Profile Image Container -->
             <FrameLayout
                 android:layout_width="120dp"
                 android:layout_height="120dp"
                 android:layout_gravity="center_horizontal">
 
-                <ImageView
+                <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/profile_image"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/ic_profile_placeholder"
-                    android:background="@drawable/profile_image_background"
+                    app:shapeAppearanceOverlay="@style/CircleImageView"
+                    android:padding="2dp"
+                    android:background="@android:color/white"
                     android:scaleType="centerCrop"/>
 
                 <ImageView
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:id="@+id/btnChangeProfileImage"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:src="@drawable/ic_camera"
                     android:layout_gravity="bottom|end"
-                    android:background="@drawable/camera_icon_background"
-                    android:padding="8dp"/>
+                    android:background="@drawable/bg_chip_soft"
+                    android:backgroundTint="#E8F5E9"
+                    android:padding="8dp"
+                    app:tint="#2E7D32"/>
 
             </FrameLayout>
 
@@ -71,40 +64,51 @@
                 android:layout_height="wrap_content"
                 android:text="Cambiar foto de perfil"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="8dp"
-                android:textColor="@android:color/darker_gray"/>
+                android:layout_marginTop="12dp"
+                android:textColor="#A5D6A7"
+                android:textSize="14sp"/>
 
-            <com.google.android.material.card.MaterialCardView
+            <!-- User Info Card -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                app:cardCornerRadius="8dp"
-                app:cardBackgroundColor="#FFFFFF"
-                app:strokeWidth="1dp"
-                app:strokeColor="#E0E0E0">
+                android:orientation="vertical"
+                android:layout_marginTop="32dp">
 
-                <LinearLayout
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Nombre de usuario"
+                    android:textColor="#2E7D32"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_chip_soft"
+                    android:backgroundTint="#E8F5E9"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="4dp"
+                    android:layout_marginBottom="-12dp"
+                    android:layout_marginStart="8dp"
+                    android:elevation="4dp"/>
+
+                 <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/etUsername"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
+                    android:text="martinmunozbastida"
+                    android:enabled="true"
+                    android:focusable="false"
+                    android:clickable="true"
+                    android:cursorVisible="false"
+                    android:textColor="#2E7D32"
+                    android:background="@drawable/bg_input_field"
+                    android:backgroundTint="#F0FFFFFF"
+                    android:drawableEnd="@drawable/ic_edit"
+                    android:drawableTint="#2E7D32"
+                    android:paddingTop="24dp"
+                    android:paddingBottom="16dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"/>
+            </LinearLayout>
 
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Nombre de usuario: martinmunozbastida"
-                        android:textColor="@android:color/black" />
-
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@drawable/ic_edit"
-                        android:layout_marginStart="8dp"/>
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -112,13 +116,17 @@
                 android:text="Mi Sitio Favorito"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="@android:color/black"
+                android:textColor="#FFFFFF"
                 android:layout_marginTop="32dp"
                 android:layout_marginBottom="16dp"/>
 
             <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="250dp">
+                android:layout_height="200dp"
+                android:background="@drawable/bg_input_field"
+                android:backgroundTint="#F0FFFFFF"
+                android:clipToOutline="true"
+                android:padding="2dp">
 
                 <fragment
                     android:id="@+id/map"
@@ -129,30 +137,34 @@
                 <SearchView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="16dp"
+                    android:layout_margin="8dp"
                     android:queryHint="Buscar"
                     android:iconifiedByDefault="false"
-                    android:background="@android:color/white"/>
+                    android:background="@drawable/bg_input_field"/>
 
             </FrameLayout>
-
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnElegirSitio"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:text="Elegir sitio favorito"
-                android:layout_marginTop="24dp"
-                app:cornerRadius="28dp"
-                android:backgroundTint="#E6D3B3"
-                android:textColor="@android:color/black"/>
+                android:layout_height="wrap_content"
+                android:text="Guardar Sitio Favorito"
+                android:layout_marginTop="16dp"
+                app:cornerRadius="24dp"
+                android:textColor="@android:color/white"
+                app:backgroundTint="#2E7D32"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"/>
 
             <LinearLayout
                 android:id="@+id/layout_pareja_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginTop="24dp">
+                android:layout_marginTop="32dp"
+                android:background="@drawable/bg_input_field"
+                android:backgroundTint="#F0FFFFFF"
+                android:padding="16dp">
                 
                 <TextView
                     android:id="@+id/tvParejaTitle"
@@ -161,7 +173,7 @@
                     android:text="Pareja"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:textColor="@android:color/black"
+                    android:textColor="#2E7D32"
                     android:layout_marginBottom="8dp"/>
 
                 <TextView
@@ -169,14 +181,17 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="No tienes pareja vinculada"
-                    android:layout_marginBottom="8dp"/>
+                    android:textColor="#2E3E5C"
+                    android:layout_marginBottom="16dp"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnVincularPareja"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Vincular con pareja"
-                    app:cornerRadius="28dp"/>
+                    app:cornerRadius="24dp"
+                    android:textColor="@color/white"
+                    app:backgroundTint="#2E7D32"/>
 
                 <TextView
                     android:id="@+id/tvSolicitudesTitle"
@@ -184,6 +199,7 @@
                     android:layout_height="wrap_content"
                     android:text="Solicitudes pendientes"
                     android:textStyle="bold"
+                    android:textColor="#2E7D32"
                     android:layout_marginTop="16dp"
                     android:layout_marginBottom="8dp"
                     android:visibility="gone"/>
@@ -200,12 +216,14 @@
                 android:id="@+id/btnCerrarSesion"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="wrap_content"
                 android:text="Cerrar Sesión"
-                android:layout_marginTop="16dp"
-                app:cornerRadius="28dp"
-                android:textColor="?attr/colorError"
-                app:strokeColor="?attr/colorError" />
+                android:layout_marginTop="32dp"
+                app:cornerRadius="24dp"
+                android:textColor="#EF5350"
+                app:strokeColor="#EF5350"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"/>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
@@ -215,6 +233,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
+        android:backgroundTint="#FFFFFF"
         app:menu="@menu/bottom_nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

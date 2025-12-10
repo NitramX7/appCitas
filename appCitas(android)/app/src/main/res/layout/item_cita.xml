@@ -115,6 +115,19 @@
                 android:backgroundTint="#EFEBE9"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="6dp" />
+
+            <TextView
+                android:id="@+id/tvChipFacilidad"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Facilidad"
+                android:textSize="12sp"
+                android:textColor="#5C6BC0"
+                android:background="@drawable/bg_chip_soft"
+                android:backgroundTint="#E8EAF6"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:layout_marginStart="8dp"/>
         </LinearLayout>
 
     </LinearLayout>

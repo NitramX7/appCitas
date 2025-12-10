@@ -43,7 +43,7 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
     private var accelerometer: Sensor? = null
     private var filtroSeleccionado: CitaFiltroRequest? = null
     private var lastShakeTime: Long = 0
-    private val shakeThreshold = 12f
+    private val shakeThreshold = 10f
     private val shakeCooldownMs = 1500L
 
     companion object {
@@ -191,73 +191,78 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
     }
 
     private fun mostrarDialogoFiltros() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_filtros, null)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_search_wizard, null)
         val dialog = AlertDialog.Builder(this).setView(dialogView).create()
+        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
         dialog.show()
 
-        val groupCercania = dialog.findViewById<RadioGroup>(R.id.groupCercania)
-        val groupDinero = dialog.findViewById<RadioGroup>(R.id.groupDinero)
-        val groupFacilidad = dialog.findViewById<RadioGroup>(R.id.groupFacilidad)
-        val groupIntensidad = dialog.findViewById<RadioGroup>(R.id.groupIntensidad)
-        val groupTemporada = dialog.findViewById<RadioGroup>(R.id.groupTemporada)
+        val flipper = dialogView.findViewById<android.widget.ViewFlipper>(R.id.wizardFlipper)
+        val tvTitle = dialogView.findViewById<TextView>(R.id.tvWizardTitle)
+        val btnNext = dialogView.findViewById<Button>(R.id.btnWizardNext)
+        val btnBack = dialogView.findViewById<Button>(R.id.btnWizardBack)
 
-        groupCercania?.let { setupClearableRadioGroup(it) }
-        groupDinero?.let { setupClearableRadioGroup(it) }
-        groupFacilidad?.let { setupClearableRadioGroup(it) }
-        groupIntensidad?.let { setupClearableRadioGroup(it) }
-        groupTemporada?.let { setupClearableRadioGroup(it) }
+        // UI Components
+        val chipGroupTemporada = dialogView.findViewById<com.google.android.material.chip.ChipGroup>(R.id.chipGroupTemporada)
+        val sliderDinero = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderDinero)
+        val sliderIntensidad = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderIntensidad)
+        val sliderCercania = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderCercania)
+        val sliderFacilidad = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderFacilidad)
 
-        dialog.findViewById<ImageButton>(R.id.btnCloseDialog)?.setOnClickListener {
-            dialog.dismiss()
+        var currentStep = 0
+        val totalSteps = 5
+        val titles = listOf("Temporada", "Dinero", "Intensidad", "Cercanía", "Facilidad")
+
+        fun updateUI() {
+            flipper.displayedChild = currentStep
+            tvTitle.text = "Paso ${currentStep + 1}/$totalSteps: ${titles[currentStep]}"
+            
+            btnBack.visibility = if (currentStep == 0) View.INVISIBLE else View.VISIBLE
+            btnNext.text = if (currentStep == totalSteps - 1) "¡Buscar!" else "Siguiente"
         }
 
-        dialog.findViewById<Button>(R.id.btnAplicarFiltros)?.setOnClickListener {
-            val cercaniaSeleccionada = when (groupCercania?.checkedRadioButtonId) {
-                R.id.cercania_cerca -> 1
-                R.id.cercania_media -> 2
-                R.id.cercania_lejos -> 3
-                else -> null
+        btnNext.setOnClickListener {
+            if (currentStep < totalSteps - 1) {
+                currentStep++
+                updateUI()
+            } else {
+                // Collect Data
+                val temporadaSeleccionada = when (chipGroupTemporada?.checkedChipId) {
+                    R.id.chip_temp_invierno -> 1
+                    R.id.chip_temp_verano -> 2
+                    R.id.chip_temp_otono -> 3
+                    R.id.chip_temp_primavera -> 4
+                    else -> null
+                }
+                
+                // Sliders return float (1.0, 2.0, 3.0), convert to Int
+                val dineroSeleccionado = sliderDinero?.value?.toInt()
+                val intensidadSeleccionada = sliderIntensidad?.value?.toInt()
+                val cercaniaSeleccionada = sliderCercania?.value?.toInt()
+                val facilidadSeleccionada = sliderFacilidad?.value?.toInt()
+
+                filtroSeleccionado = CitaFiltroRequest(
+                    temporada = temporadaSeleccionada,
+                    dinero = dineroSeleccionado,
+                    intensidad = intensidadSeleccionada,
+                    cercania = cercaniaSeleccionada,
+                    facilidad = facilidadSeleccionada
+                )
+
+                Toast.makeText(this, "Filtros aplicados. ¡Buscando...!", Toast.LENGTH_SHORT).show()
+                filtroSeleccionado?.let { aplicarFiltrosYCargarCitas(it) }
+                dialog.dismiss()
             }
-
-            val dineroSeleccionado = when (groupDinero?.checkedRadioButtonId) {
-                R.id.dinero_bajo -> 1
-                R.id.dinero_medio -> 2
-                R.id.dinero_alto -> 3
-                else -> null
-            }
-
-            val facilidadSeleccionada = when (groupFacilidad?.checkedRadioButtonId) {
-                R.id.facil_facil -> 1
-                R.id.facil_normal -> 2
-                R.id.facil_dificil -> 3
-                else -> null
-            }
-
-            val intensidadSeleccionada = when (groupIntensidad?.checkedRadioButtonId) {
-                R.id.int_tranqui -> 1
-                R.id.int_normal -> 2
-                R.id.int_intenso -> 3
-                else -> null
-            }
-
-            val temporadaSeleccionada = when (groupTemporada?.checkedRadioButtonId) {
-                R.id.temp_invierno -> 1
-                R.id.temp_verano -> 2
-                R.id.temp_otro -> 3
-                else -> null
-            }
-
-            filtroSeleccionado = CitaFiltroRequest(
-                temporada = temporadaSeleccionada,
-                dinero = dineroSeleccionado,
-                intensidad = intensidadSeleccionada,
-                cercania = cercaniaSeleccionada,
-                facilidad = facilidadSeleccionada
-            )
-
-            Toast.makeText(this, "Filtros aplicados. ¡Agita el móvil para buscar una cita!", Toast.LENGTH_LONG).show()
-            dialog.dismiss()
         }
+
+        btnBack.setOnClickListener {
+            if (currentStep > 0) {
+                currentStep--
+                updateUI()
+            }
+        }
+        
+        // Initialize
+        updateUI()
     }
 
     private fun aplicarFiltrosYCargarCitas(filtro: CitaFiltroRequest) {

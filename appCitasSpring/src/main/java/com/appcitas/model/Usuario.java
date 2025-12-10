@@ -45,6 +45,9 @@ public class Usuario implements Serializable {
     @Column(name = "fcm_token", length = 400)
     String fcmToken;
 
+    @Column(name = "foto_url")
+    private String fotoUrl;
+
     @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro = LocalDateTime.now();
 

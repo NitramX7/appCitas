@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Solid white background to ensure no transparency issues -->
+    <item android:drawable="@android:color/white" />
+    
+    <!-- The logo, centered and scaled down slightly (via padding) to interact correctly with Adaptive Icon masking -->
+    <!-- Adding padding effectively 'zooms out' the image so the system's 'zoom in' doesn't crop important details -->
+    <item 
+        android:top="8dp" 
+        android:bottom="8dp" 
+        android:left="8dp" 
+        android:right="8dp">
+        <bitmap 
+            android:src="@drawable/app_logo" />
+    </item>
+</layer-list>

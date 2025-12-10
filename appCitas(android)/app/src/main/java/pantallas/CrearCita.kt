@@ -28,25 +28,27 @@ class CrearCita : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.title = "Crear Nueva Cita"
-
-        currentlyCheckedId = binding.groupTemporada.checkedButtonId
+        // groupTemporada is now a RadioGroup
+        currentlyCheckedId = binding.groupTemporada.checkedRadioButtonId
         setupBottomNavigation()
         setupClearableToggleGroup()
 
-        binding.btnCrearCitaGuardar.setOnClickListener {
+        binding.fabSave.setOnClickListener {
             guardarCita()
         }
     }
 
     private fun setupClearableToggleGroup() {
-        binding.groupTemporada.children.forEach { button ->
-            button.setOnClickListener {
-                if (currentlyCheckedId == button.id) {
-                    binding.groupTemporada.clearChecked()
-                    currentlyCheckedId = -1
-                } else {
-                    binding.groupTemporada.check(button.id)
-                    currentlyCheckedId = button.id
+        binding.groupTemporada.children.forEach { view ->
+            if (view is android.widget.RadioButton) {
+                view.setOnClickListener {
+                     if (currentlyCheckedId == view.id) {
+                        binding.groupTemporada.clearCheck()
+                        currentlyCheckedId = -1
+                    } else {
+                        binding.groupTemporada.check(view.id)
+                        currentlyCheckedId = view.id
+                    }
                 }
             }
         }
@@ -99,7 +101,7 @@ class CrearCita : AppCompatActivity() {
             return
         }
 
-        val temporada = when (binding.groupTemporada.checkedButtonId) {
+        val temporada = when (binding.groupTemporada.checkedRadioButtonId) {
             R.id.btnInvierno -> 1
             R.id.btnVerano -> 2
             R.id.btnOtono -> 3

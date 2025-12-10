@@ -1,7 +1,10 @@
 package pantallas
 
+import com.bumptech.glide.Glide
+import com.google.firebase.storage.FirebaseStorage
 import android.content.Intent
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.appcitas.R
@@ -16,12 +19,23 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.auth.FirebaseAuth
+import pantallas.CrearCita
+import pantallas.MainActivity
+import pantallas.MisCitas
+import pantallas.ParejaActivity
 
 class MiPerfil : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var binding: ActivityMiPerfilBinding
     private lateinit var mMap: GoogleMap
     private lateinit var firebaseAuth: FirebaseAuth
+    
+    // Image Picker Launcher
+    private val pickImageLauncher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.GetContent()) { uri: android.net.Uri? ->
+        if (uri != null) {
+            subirImagenAFirebase(uri)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,10 +43,7 @@ class MiPerfil : AppCompatActivity(), OnMapReadyCallback {
         setContentView(binding.root)
 
         firebaseAuth = FirebaseAuth.getInstance()
-
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = "Mi Perfil"
-
+        
         setupBottomNavigation()
 
         val mapFragment = supportFragmentManager
@@ -44,6 +55,166 @@ class MiPerfil : AppCompatActivity(), OnMapReadyCallback {
         }
         
         setupCoupleLogic()
+        setupProfileEditLogic()
+        setupProfileImageLogic()
+    }
+    
+    private fun setupProfileImageLogic() {
+        val cache = getSharedPreferences("cache", MODE_PRIVATE)
+        val fotoUrl = cache.getString("fotoUrl", null)
+        
+        // Load existing image if available
+        if (!fotoUrl.isNullOrEmpty()) {
+             Glide.with(this)
+                .load(fotoUrl)
+                .placeholder(R.drawable.ic_profile_placeholder)
+                .circleCrop()
+                .into(binding.profileImage)
+        }
+
+        val btnChangeImage = findViewById<android.view.View>(R.id.btnChangeProfileImage)
+        btnChangeImage.setOnClickListener {
+            try {
+                pickImageLauncher.launch("image/*")
+            } catch (e: Exception) {
+                Toast.makeText(this, "Error al abrir galería: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+        
+        binding.profileImage.setOnClickListener {
+            try {
+                pickImageLauncher.launch("image/*")
+            } catch (e: Exception) {
+                Toast.makeText(this, "Error al abrir galería: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun subirImagenAFirebase(uri: android.net.Uri) {
+        val cache = getSharedPreferences("cache", MODE_PRIVATE)
+        val userId = cache.getLong("id", -1L)
+        if (userId == -1L) return
+        
+        val storageRef = FirebaseStorage.getInstance().reference.child("profile_images/$userId.jpg")
+        
+        Toast.makeText(this, "Subiendo imagen...", Toast.LENGTH_SHORT).show()
+        
+        storageRef.putFile(uri)
+            .addOnSuccessListener {
+                storageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                    val url = downloadUri.toString()
+                    actualizarFotoEnBackend(userId, url)
+                    
+                    // Update UI immediately
+                    Glide.with(this)
+                        .load(url)
+                        .circleCrop()
+                        .into(binding.profileImage)
+                }
+            }
+            .addOnFailureListener {
+                 Toast.makeText(this, "Error al subir imagen: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun actualizarFotoEnBackend(userId: Long, url: String) {
+        val cache = getSharedPreferences("cache", MODE_PRIVATE)
+        val currentUsername = cache.getString("username", "") ?: ""
+        val currentEmail = cache.getString("email", "") ?: ""
+        
+        actualizarUsuarioBackend(userId, currentUsername, currentEmail, url)
+    }
+
+    private fun setupProfileEditLogic() {
+        // ... (Keep existing logic, update cache loading)
+        val etUsername = findViewById<android.widget.EditText>(R.id.etUsername)
+        val cache = getSharedPreferences("cache", MODE_PRIVATE)
+        val currentUsername = cache.getString("username", "Usuario")
+        etUsername.setText(currentUsername)
+
+        etUsername.setOnClickListener {
+            mostrarDialogoEditarUsuario()
+        }
+    }
+    
+    private fun mostrarDialogoEditarUsuario() {
+        val cache = getSharedPreferences("cache", MODE_PRIVATE)
+        val currentUsername = cache.getString("username", "")
+        val currentEmail = cache.getString("email", "")
+        val userId = cache.getLong("id", -1L)
+
+        if (userId == -1L) return
+
+        // Inflate custom layout
+        val dialogView = layoutInflater.inflate(R.layout.dialog_edit_username, null)
+        val etDialogUsername = dialogView.findViewById<android.widget.EditText>(R.id.etDialogUsername)
+        val btnCancel = dialogView.findViewById<android.view.View>(R.id.btnDialogCancel)
+        val btnSave = dialogView.findViewById<android.view.View>(R.id.btnDialogSave)
+
+        etDialogUsername.setText(currentUsername)
+
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        // Transparent background to let the CardView corners show
+        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+
+        btnCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        btnSave.setOnClickListener {
+            val newUsername = etDialogUsername.text.toString().trim()
+            if (newUsername.isNotEmpty()) {
+                actualizarUsuarioBackend(userId, newUsername, currentEmail ?: "")
+                dialog.dismiss()
+            } else {
+                Toast.makeText(this, "El nombre no puede estar vacío", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        dialog.show()
+    }
+
+    // Updated to accept fotoUrl (optional)
+    private fun actualizarUsuarioBackend(id: Long, newUsername: String, email: String, newFotoUrl: String? = null) {
+        // ...
+        val cache = getSharedPreferences("cache", MODE_PRIVATE)
+        // If newFotoUrl is passed, use it, otherwise use cached or null
+        val fotoUrlToSend = newFotoUrl ?: cache.getString("fotoUrl", null)
+
+        val usuarioUpdate = com.example.appcitas.model.Usuario(
+            id = id,
+            username = newUsername,
+            email = email,
+            password = "",
+            fotoUrl = fotoUrlToSend
+        )
+
+        com.example.appcitas.RetrofitClient.usuarioApi.updateUsuario(usuarioUpdate)
+            .enqueue(object : retrofit2.Callback<com.example.appcitas.model.Usuario> {
+                override fun onResponse(call: retrofit2.Call<com.example.appcitas.model.Usuario>, response: retrofit2.Response<com.example.appcitas.model.Usuario>) {
+                    if (response.isSuccessful) {
+                        Toast.makeText(this@MiPerfil, "Perfil actualizado", Toast.LENGTH_SHORT).show()
+                        val cacheEditor = getSharedPreferences("cache", MODE_PRIVATE).edit()
+                        cacheEditor.putString("username", newUsername)
+                        if (newFotoUrl != null) {
+                            cacheEditor.putString("fotoUrl", newFotoUrl)
+                        }
+                        cacheEditor.apply()
+                        
+                        val etUsername = findViewById<android.widget.EditText>(R.id.etUsername)
+                        etUsername.setText(newUsername)
+                    } else {
+                         Toast.makeText(this@MiPerfil, "Error al actualizar: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                override fun onFailure(call: retrofit2.Call<com.example.appcitas.model.Usuario>, t: Throwable) {
+                     Toast.makeText(this@MiPerfil, "Error de red: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 
     private fun setupBottomNavigation() {
@@ -137,6 +308,8 @@ class MiPerfil : AppCompatActivity(), OnMapReadyCallback {
     private fun mostrarDialogoVincular(userId: Long) {
         val input = android.widget.EditText(this)
         input.hint = "Email del usuario"
+        input.setTextColor(android.graphics.Color.BLACK)
+        input.setHintTextColor(android.graphics.Color.GRAY)
         
         androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle("Vincular con pareja")

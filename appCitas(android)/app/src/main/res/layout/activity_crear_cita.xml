@@ -3,162 +3,335 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_coordinator"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
+    android:background="@color/bg_sage_light"
     tools:context="pantallas.CrearCita">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.Material3.ActionBar">
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
+        <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
-            app:title="Crear Nueva Cita"
-            app:titleTextColor="?attr/colorOnSurface" />
+            app:elevation="0dp">
 
-    </com.google.android.material.appbar.AppBarLayout>
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true"
-        android:paddingBottom="?attr/actionBarSize"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="40dp">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/contentLayout"
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Crear Nueva Cita"
+                        android:textColor="@color/title_accent"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Define los detalles de tu próximo plan"
+                        android:textColor="@color/season_unselected_text"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+            </androidx.appcompat.widget.Toolbar>
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            android:paddingBottom="80dp"
+            android:clipToPadding="false">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="24dp">
+
+                <!-- TÍTULO -->
+                <TextView
+                    android:id="@+id/tvTituloLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Título"
+                    android:textColor="@color/cream_white"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_label_pill"
+                    android:elevation="6dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"/>
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/etTituloCita"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Título"
+                    android:textColorHint="@color/text_hint"
+                    android:textColor="@color/season_unselected_text"
+                    android:background="@drawable/bg_input_field"
+                    android:paddingTop="24dp"
+                    android:paddingBottom="16dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    app:layout_constraintTop_toTopOf="@id/tvTituloLabel"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginTop="16dp"/>
+
+                <!-- DESCRIPCIÓN -->
+                <TextView
+                    android:id="@+id/tvDescripcionLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Descripción"
+                    android:textColor="@color/cream_white"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_label_pill"
+                    android:elevation="6dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/etTituloCita"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="24dp"/>
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/etDescripcionCita"
+                    android:layout_width="match_parent"
+                    android:layout_height="140dp"
+                    android:hint="Descripción"
+                    android:gravity="top|start"
+                    android:textColorHint="@color/text_hint"
+                    android:textColor="@color/season_unselected_text"
+                    android:background="@drawable/bg_input_field"
+                    android:paddingTop="24dp"
+                    android:paddingBottom="16dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    app:layout_constraintTop_toTopOf="@id/tvDescripcionLabel"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginTop="16dp"/>
+
+                <!-- SECCIÓN DETALLES -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="@drawable/bg_input_field"
+                    android:backgroundTint="#80F3F3F0"
+                    android:padding="16dp"
+                    android:layout_marginTop="32dp"
+                    app:layout_constraintTop_toBottomOf="@id/etDescripcionCita">
+
+                    <!-- TEMPORADA -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Temporada"
+                        android:textColor="@color/season_unselected_text"
+                        android:layout_marginBottom="8dp"/>
+
+                    <RadioGroup
+                        android:id="@+id/groupTemporada"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/bg_season_selector">
+
+                        <androidx.appcompat.widget.AppCompatRadioButton
+                            android:id="@+id/btnInvierno"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="36dp"
+                            android:text="INVIERNO"
+                            android:textColor="@color/selector_season_text"
+                            android:background="@drawable/selector_season_item"
+                            android:button="@null"
+                            android:gravity="center"
+                            android:textSize="12sp"
+                            android:textStyle="bold"/>
+
+                        <androidx.appcompat.widget.AppCompatRadioButton
+                            android:id="@+id/btnVerano"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="36dp"
+                            android:text="VERANO"
+                            android:textColor="@color/selector_season_text"
+                            android:background="@drawable/selector_season_item"
+                            android:button="@null"
+                            android:gravity="center"
+                            android:checked="true"
+                            android:textSize="12sp"
+                            android:textStyle="bold"/>
+
+                        <androidx.appcompat.widget.AppCompatRadioButton
+                            android:id="@+id/btnOtono"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="36dp"
+                            android:text="OTOÑO"
+                            android:textColor="@color/selector_season_text"
+                            android:background="@drawable/selector_season_item"
+                            android:button="@null"
+                            android:gravity="center"
+                            android:textSize="12sp"
+                            android:textStyle="bold"/>
+
+                        <androidx.appcompat.widget.AppCompatRadioButton
+                            android:id="@+id/btnPrimavera"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="36dp"
+                            android:text="PRIMA..."
+                            android:textColor="@color/selector_season_text"
+                            android:background="@drawable/selector_season_item"
+                            android:button="@null"
+                            android:gravity="center"
+                            android:textSize="12sp"
+                            android:textStyle="bold"/>
+
+                    </RadioGroup>
+
+                    <!-- SLIDERS -->
+                    <!-- DINERO -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Dinero"
+                        android:textColor="@color/season_unselected_text"
+                        android:layout_marginTop="24dp"/>
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/sliderDinero"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:valueFrom="1"
+                        android:valueTo="3"
+                        android:stepSize="1"
+                        app:thumbColor="@color/dark_chocolate"
+                        app:trackColorActive="@color/gradient_start"
+                        app:trackColorInactive="@color/slider_track_inactive"
+                        app:tickVisible="true"/>
+
+                    <!-- INTENSIDAD -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Intensidad"
+                        android:textColor="@color/season_unselected_text"
+                        android:layout_marginTop="16dp"/>
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/sliderIntensidad"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:valueFrom="1"
+                        android:valueTo="3"
+                        android:stepSize="1"
+                        app:thumbColor="@color/dark_chocolate"
+                        app:trackColorActive="@color/gradient_start"
+                        app:trackColorInactive="@color/slider_track_inactive"
+                        app:tickVisible="true"/>
+
+                    <!-- CERCANÍA -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Cercanía"
+                        android:textColor="@color/season_unselected_text"
+                        android:layout_marginTop="16dp"/>
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/sliderCercania"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:valueFrom="1"
+                        android:valueTo="3"
+                        android:stepSize="1"
+                        app:thumbColor="@color/dark_chocolate"
+                        app:trackColorActive="@color/gradient_start"
+                        app:trackColorInactive="@color/slider_track_inactive"
+                        app:tickVisible="true"/>
+
+                    <!-- FACILIDAD -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Facilidad"
+                        android:textColor="@color/season_unselected_text"
+                        android:layout_marginTop="16dp"/>
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/sliderFacilidad"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:valueFrom="1"
+                        android:valueTo="3"
+                        android:stepSize="1"
+                        app:thumbColor="@color/dark_chocolate"
+                        app:trackColorActive="@color/gradient_start"
+                        app:trackColorInactive="@color/slider_track_inactive"
+                        app:tickVisible="true"/>
+
+                </LinearLayout>
+
+                <!-- BOTÓN GUARDAR (Hidden in mockup but essential) -->
+                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCrearCitaGuardar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="¡Crear plan/cita!"
+                    android:textColor="@android:color/white"
+                    app:backgroundTint="@color/dark_chocolate"
+                    app:cornerRadius="24dp"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp" 
+                    android:layout_marginTop="32dp"
+                     app:layout_constraintTop_toBottomOf="@+id/groupTemporada" 
+                    android:visibility="gone"/> 
+                    <!-- Keeping it gone or adding at bottom of linear layout if needed, though scrollview handles it. 
+                         The user mockup doesn't show a save button at bottom, maybe it's cut off or handled by the + button in nav? 
+                         Wait, the screenshot shows bottom nav. The save button was there before. I will put it back but maybe style it better or leave it hidden if the FAB is the way?
+                         The previous layout had a save button. I'll keep it at the end of the linear layout or outside.
+                         Wait, I'll put it INSIDE the LinearLayout for 'Sección Detalles' or just below it in ConstraintLayout.
+                         Actually, the mockup cuts off. I should probably keep the button available. 
+                    -->
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_navigation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="24dp">
+            android:layout_gravity="bottom"
+            app:menu="@menu/bottom_nav_menu"
+            android:background="@android:color/white"/>
+            
+         <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabSave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_check"
+            app:layout_anchor="@id/bottom_navigation"
+            app:layout_anchorGravity="top|end"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="100dp"
+            app:backgroundTint="@color/label_pill_bg"
+            app:tint="@android:color/white"
+            android:contentDescription="Guardar"/>
 
-            <!-- TÍTULO -->
-            <TextView
-                android:id="@+id/tvTituloLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Título"
-                android:textColor="@color/almond_cream"
-                android:background="@drawable/label_background"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:elevation="4dp"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="@+id/etTituloCita"/>
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etTituloCita"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:hint="Título"
-                android:textColorHint="?android:attr/textColorHint"
-                android:textColor="@color/dark_chocolate"
-                android:background="@color/cream_white"
-                android:padding="16dp"
-                android:layout_marginTop="8dp"
-                app:layout_constraintTop_toBottomOf="@+id/tvTituloLabel"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
-
-            <!-- DESCRIPCIÓN -->
-            <TextView
-                android:id="@+id/tvDescripcionLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="Descripción"
-                android:textColor="@color/almond_cream"
-                android:background="@drawable/label_background"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:elevation="4dp"
-                app:layout_constraintTop_toBottomOf="@id/etTituloCita"
-                app:layout_constraintStart_toStartOf="@+id/etDescripcionCita"/>
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etDescripcionCita"
-                android:layout_width="0dp"
-                android:layout_height="120dp"
-                android:hint="Descripción"
-                android:gravity="top"
-                android:textColorHint="?android:attr/textColorHint"
-                android:textColor="@color/dark_chocolate"
-                android:background="@color/cream_white"
-                android:padding="16dp"
-                android:layout_marginTop="8dp"
-                app:layout_constraintTop_toBottomOf="@+id/tvDescripcionLabel"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
-
-            <!-- TEMPORADA -->
-            <TextView
-                android:id="@+id/tvTemporadaLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="Temporada"
-                android:textColor="?attr/colorOnSurface"
-                app:layout_constraintTop_toBottomOf="@id/etDescripcionCita"
-                app:layout_constraintStart_toStartOf="parent" />
-
-            <com.google.android.material.button.MaterialButtonToggleGroup
-                android:id="@+id/groupTemporada"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:singleSelection="true"
-                app:checkedButton="@id/btnVerano"
-                app:layout_constraintTop_toBottomOf="@id/tvTemporadaLabel"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
-
-                <com.google.android.material.button.MaterialButton style="@style/Widget.App.Button.OutlinedButton.Chip" android:id="@+id/btnInvierno" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Invierno"/>
-                <com.google.android.material.button.MaterialButton style="@style/Widget.App.Button.OutlinedButton.Chip" android:id="@+id/btnVerano" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Verano"/>
-                <com.google.android.material.button.MaterialButton style="@style/Widget.App.Button.OutlinedButton.Chip" android:id="@+id/btnOtono" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Otoño"/>
-                <com.google.android.material.button.MaterialButton style="@style/Widget.App.Button.OutlinedButton.Chip" android:id="@+id/btnPrimavera" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Primavera"/>
-            </com.google.android.material.button.MaterialButtonToggleGroup>
-
-            <!-- SLIDERS -->
-            <TextView android:id="@+id/tvDineroLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:text="Dinero" android:textColor="?attr/colorOnSurface" app:layout_constraintTop_toBottomOf="@id/groupTemporada" app:layout_constraintStart_toStartOf="parent"/>
-            <com.google.android.material.slider.Slider android:id="@+id/sliderDinero" android:layout_width="0dp" android:layout_height="wrap_content" android:valueFrom="1" android:valueTo="3" android:stepSize="1" app:layout_constraintTop_toBottomOf="@id/tvDineroLabel" app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"/>
-
-            <TextView android:id="@+id/tvIntensidadLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="Intensidad" android:textColor="?attr/colorOnSurface" app:layout_constraintTop_toBottomOf="@id/sliderDinero" app:layout_constraintStart_toStartOf="parent"/>
-            <com.google.android.material.slider.Slider android:id="@+id/sliderIntensidad" android:layout_width="0dp" android:layout_height="wrap_content" android:valueFrom="1" android:valueTo="3" android:stepSize="1" app:layout_constraintTop_toBottomOf="@id/tvIntensidadLabel" app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"/>
-
-            <TextView android:id="@+id/tvCercaniaLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="Cercanía" android:textColor="?attr/colorOnSurface" app:layout_constraintTop_toBottomOf="@id/sliderIntensidad" app:layout_constraintStart_toStartOf="parent"/>
-            <com.google.android.material.slider.Slider android:id="@+id/sliderCercania" android:layout_width="0dp" android:layout_height="wrap_content" android:valueFrom="1" android:valueTo="3" android:stepSize="1" app:layout_constraintTop_toBottomOf="@id/tvCercaniaLabel" app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"/>
-
-            <TextView android:id="@+id/tvFacilidadLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="Facilidad" android:textColor="?attr/colorOnSurface" app:layout_constraintTop_toBottomOf="@id/sliderCercania" app:layout_constraintStart_toStartOf="parent"/>
-            <com.google.android.material.slider.Slider android:id="@+id/sliderFacilidad" android:layout_width="0dp" android:layout_height="wrap_content" android:valueFrom="1" android:valueTo="3" android:stepSize="1" app:layout_constraintTop_toBottomOf="@id/tvFacilidadLabel" app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"/>
-
-            <!-- BOTÓN GUARDAR -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnCrearCitaGuardar"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:text="¡Crear plan/cita!"
-                android:backgroundTint="?attr/colorPrimary"
-                app:cornerRadius="24dp"
-                android:paddingTop="12dp"
-                android:paddingBottom="12dp"
-                app:layout_constraintTop_toBottomOf="@id/sliderFacilidad"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </ScrollView>
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        app:menu="@menu/bottom_nav_menu" />
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>

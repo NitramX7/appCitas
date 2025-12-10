@@ -48,11 +48,25 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public Usuario updateUsuario(Usuario usuarioActualizar) {
-        if (usuarioActualizar != null &&
-                usuarioRepositorio.findById(usuarioActualizar.getId()).isPresent()) {
+        if (usuarioActualizar != null && usuarioActualizar.getId() != null) {
+            Optional<Usuario> existingOpt = usuarioRepositorio.findById(usuarioActualizar.getId());
+            if (existingOpt.isPresent()) {
+                Usuario existingUser = existingOpt.get();
 
-            usuarioRepositorio.save(usuarioActualizar);
-            return usuarioActualizar;
+                // Update only fields that are allowed to be changed via this endpoint
+                if (usuarioActualizar.getUsername() != null && !usuarioActualizar.getUsername().isEmpty()) {
+                    existingUser.setUsername(usuarioActualizar.getUsername());
+                }
+                if (usuarioActualizar.getEmail() != null && !usuarioActualizar.getEmail().isEmpty()) {
+                    existingUser.setEmail(usuarioActualizar.getEmail());
+                }
+                if (usuarioActualizar.getFotoUrl() != null) {
+                    existingUser.setFotoUrl(usuarioActualizar.getFotoUrl());
+                }
+                // Do NOT update pareja, estado_p, password, etc. here to preserve them.
+
+                return usuarioRepositorio.save(existingUser);
+            }
         }
         return null;
     }

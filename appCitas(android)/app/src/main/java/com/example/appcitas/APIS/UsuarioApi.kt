@@ -14,4 +14,7 @@ interface UsuarioApi {
      */
     @POST("auth/verify-token")
     fun verificarToken(@Body token: Map<String, String>): Call<Usuario>
+
+    @retrofit2.http.PUT("usuarios")
+    fun updateUsuario(@Body usuario: Usuario): Call<Usuario>
 }

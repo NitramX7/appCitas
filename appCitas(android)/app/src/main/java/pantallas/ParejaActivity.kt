@@ -38,7 +38,6 @@ class ParejaActivity : AppCompatActivity() {
             return
         }
 
-        setupToolbar()
         setupRecyclerView()
         setupBottomNavigation()
 
@@ -54,10 +53,6 @@ class ParejaActivity : AppCompatActivity() {
         loadPendingInvitations()
     }
 
-    private fun setupToolbar() {
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = "Pareja"
-    }
 
     private fun setupRecyclerView() {
         // Inicialmente vacía
