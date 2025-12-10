@@ -392,26 +392,17 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
         
         dialog.show()
 
-        // Animación de entrada épica
-        dialogView.alpha = 0f
-        dialogView.scaleX = 0.8f
-        dialogView.scaleY = 0.8f
-        dialogView.animate()
-            .alpha(1f)
-            .scaleX(1f)
-            .scaleY(1f)
-            .setDuration(300)
-            .start()
-
-        dialog.findViewById<ImageButton>(R.id.btnCloseDialog)?.setOnClickListener {
-            dialog.dismiss()
-        }
-
+        // Referencias a las vistas
+        val ivIcon = dialogView.findViewById<android.widget.ImageView>(R.id.ivCitaIcon)
         val txtTitulo = dialogView.findViewById<TextView>(R.id.txtTituloDialog)
         val txtDescripcion = dialogView.findViewById<TextView>(R.id.txtDescripcionDialog)
         val txtDetalles = dialogView.findViewById<TextView>(R.id.txtDetallesDialog)
+        val cardDescripcion = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.cardDescripcion)
+        val cardDetalles = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.cardDetalles)
+        val btnClose = dialog.findViewById<ImageButton>(R.id.btnCloseDialog)
 
-        txtTitulo.text = cita.titulo
+        // Establecer contenido
+        txtTitulo.text = "✨ ${cita.titulo} ✨"
         txtDescripcion.text = cita.descripcion
         txtDetalles.text = buildString {
             append("✨ Cercanía: ${mapCercania(cita.cercania)}\n")
@@ -419,6 +410,95 @@ class MisCitas : AppCompatActivity(), CitaActionListener, SensorEventListener {
             append("🎯 Facilidad: ${mapFacilidad(cita.facilidad)}\n")
             append("⚡ Intensidad: ${mapIntensidad(cita.intensidad)}\n")
             append("🌟 Temporada: ${mapTemporada(cita.temporada)}")
+        }
+
+        // Animación de entrada general con bounce
+        dialogView.alpha = 0f
+        dialogView.scaleX = 0.7f
+        dialogView.scaleY = 0.7f
+        dialogView.animate()
+            .alpha(1f)
+            .scaleX(1f)
+            .scaleY(1f)
+            .setDuration(400)
+            .setInterpolator(android.view.animation.OvershootInterpolator())
+            .start()
+
+        // Animación del icono con rotación y bounce
+        ivIcon?.apply {
+            alpha = 0f
+            scaleX = 0f
+            scaleY = 0f
+            rotation = -180f
+            animate()
+                .alpha(1f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .rotation(0f)
+                .setDuration(600)
+                .setInterpolator(android.view.animation.BounceInterpolator())
+                .setStartDelay(100)
+                .start()
+        }
+
+        // Animación del título con fade y slide
+        txtTitulo?.apply {
+            alpha = 0f
+            translationY = -30f
+            animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(500)
+                .setStartDelay(200)
+                .start()
+        }
+
+        // Animación de cards con fade in escalonado
+        cardDescripcion?.apply {
+            alpha = 0f
+            translationY = 20f
+            animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(400)
+                .setStartDelay(300)
+                .start()
+        }
+
+        cardDetalles?.apply {
+            alpha = 0f
+            translationY = 20f
+            animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(400)
+                .setStartDelay(400)
+                .start()
+        }
+
+        // Animación del botón de cerrar con pulse suave
+        btnClose?.apply {
+            alpha = 0f
+            scaleX = 0f
+            scaleY = 0f
+            animate()
+                .alpha(1f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .setDuration(300)
+                .setStartDelay(500)
+                .start()
+            
+            setOnClickListener {
+                // Animación de salida suave
+                dialogView.animate()
+                    .alpha(0f)
+                    .scaleX(0.8f)
+                    .scaleY(0.8f)
+                    .setDuration(200)
+                    .withEndAction { dialog.dismiss() }
+                    .start()
+            }
         }
     }
 

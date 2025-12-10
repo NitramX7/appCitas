@@ -4,20 +4,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FDF5EC"
+    android:background="@drawable/bg_home_green"
     android:fillViewport="true"
     tools:context=".RegisterActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="24dp">
+        android:padding="28dp">
 
         <ImageView
             android:id="@+id/ivLogo"
-            android:layout_width="90dp"
-            android:layout_height="90dp"
-            android:layout_marginTop="40dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="50dp"
             android:src="@mipmap/ic_launcher_round"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -27,10 +27,10 @@
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Crea tu Cuenta"
-            android:textColor="@color/mauve_bark"
-            android:textSize="28sp"
+            android:layout_marginTop="20dp"
+            android:text="✨ Crea tu Cuenta"
+            android:textColor="#1B5E20"
+            android:textSize="30sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -41,8 +41,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Únete a la aventura"
-            android:textColor="@color/dusty_taupe"
+            android:text="Únete a la aventura romántica"
+            android:textColor="#2E7D32"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -53,11 +53,11 @@
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:hint="Nombre de usuario"
-            android:textColorHint="@color/dusty_taupe"
-            app:boxStrokeColor="@color/mauve_bark"
-            app:hintTextColor="@color/mauve_bark"
+            android:layout_marginTop="40dp"
+            android:hint="👤 Nombre de usuario"
+            android:textColorHint="#A5D6A7"
+            app:boxStrokeColor="#66BB6A"
+            app:hintTextColor="#2E7D32"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvSubtitle">
@@ -67,7 +67,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="text"
-                android:textColor="@color/dark_chocolate" />
+                android:textColor="#1B5E20" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -76,10 +76,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:hint="Correo Electrónico"
-            android:textColorHint="@color/dusty_taupe"
-            app:boxStrokeColor="@color/mauve_bark"
-            app:hintTextColor="@color/mauve_bark"
+            android:hint="📧 Correo Electrónico"
+            android:textColorHint="#A5D6A7"
+            app:boxStrokeColor="#66BB6A"
+            app:hintTextColor="#2E7D32"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tilUsername">
@@ -89,7 +89,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textEmailAddress"
-                android:textColor="@color/dark_chocolate" />
+                android:textColor="#1B5E20" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -98,11 +98,12 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:hint="Contraseña"
-            android:textColorHint="@color/dusty_taupe"
-            app:boxStrokeColor="@color/mauve_bark"
+            android:hint="🔒 Contraseña"
+            android:textColorHint="#A5D6A7"
+            app:boxStrokeColor="#66BB6A"
             app:endIconMode="password_toggle"
-            app:hintTextColor="@color/mauve_bark"
+            app:endIconTint="#2E7D32"
+            app:hintTextColor="#2E7D32"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tilEmail">
@@ -112,19 +113,21 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"
-                android:textColor="@color/dark_chocolate" />
+                android:textColor="#1B5E20" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRegister"
             android:layout_width="0dp"
             android:layout_height="60dp"
-            android:layout_marginTop="24dp"
-            android:backgroundTint="@color/blood_red"
+            android:layout_marginTop="28dp"
             android:text="Registrarse"
             android:textAllCaps="false"
             android:textSize="18sp"
-            app:cornerRadius="28dp"
+            android:textStyle="bold"
+            app:backgroundTint="#2E7D32"
+            app:cornerRadius="30dp"
+            app:elevation="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tilPassword" />
@@ -133,7 +136,7 @@
             android:id="@+id/social_login_layout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="28dp"
             android:gravity="center"
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
@@ -142,32 +145,41 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnFacebook"
-                style="@style/Widget.Material3.Button.Icon"
+                style="@style/Widget.Material3.Button.OutlinedButton.Icon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:text="Facebook"
-                app:icon="@drawable/ic_facebook_logo" />
+                android:textColor="#3b5998"
+                app:cornerRadius="20dp"
+                app:icon="@drawable/ic_facebook_logo"
+                app:iconTint="#3b5998"
+                app:strokeColor="#81C784" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnGoogle"
-                style="@style/Widget.Material3.Button.Icon"
+                style="@style/Widget.Material3.Button.OutlinedButton.Icon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="Google"
-                app:icon="@drawable/ic_google_logo" />
+                android:textColor="#2E7D32"
+                app:cornerRadius="20dp"
+                app:icon="@drawable/ic_google_logo"
+                app:iconTint="#2E7D32"
+                app:strokeColor="#81C784" />
         </LinearLayout>
 
         <TextView
             android:id="@+id/tvLogin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="32dp"
+            android:layout_marginTop="28dp"
+            android:layout_marginBottom="40dp"
             android:text="@string/login_prompt"
-            android:textColor="@color/mauve_bark"
+            android:textColor="#1B5E20"
             android:textSize="16sp"
+            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
